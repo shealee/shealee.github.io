@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Erlang Logger | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在Erlang&#x2F;OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang Logger">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;05&#x2F;erlang_logger&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="在Erlang&#x2F;OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-11-05T02:55:28.807Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang_logger" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/05/erlang_logger/" class="article-date">
+  <time datetime="2019-11-05T02:55:28.807Z" itemprop="datePublished">2019-11-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Erlang Logger
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在Erlang/OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。</p>
+<a id="more"></a>
+
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><p>日志事件由日志级别、要记录的消息和元数据组成。</p>
+<p>Logger后端从API转发日志事件，首先通过一组主过滤器，然后通过附加到每个日志处理程序的一组辅助过滤器。辅助过滤器位于以下指定的处理程序过滤器中。每个过滤器集包含一个日志级别检查，然后是零个或多个过滤器函数。</p>
+<p>日志级别用原子表示。在Logger内部，原子被映射到整数值，日志事件通过日志级别检查，检查其日志级别的整数值是否小于或等于当前配置的日志级别。也就是说，如果事件与配置级别相同或更严重，则通过检查。</p>
+<p>每个模块配置的日志级别可以覆盖主日志级别。例如，这是为了允许从系统的特定部分进行更详细的日志记录。可以使用筛选器函数进行比日志级别检查更复杂的筛选。过滤器函数可以根据事件的任何内容停止或传递日志事件。它还可以修改日志事件的所有部分。如果日志事件通过特定处理程序的所有主过滤器和所有处理程序过滤器，Logger将事件转发给处理程序回调。处理程序将事件格式化并将其打印到目的地。直到并包括对处理程序回调的调用在内的所有内容都在客户机进程上执行，即在发出日志事件的进程上执行。是否涉及其他流程取决于处理程序实现。处理程序是按顺序调用的，并且没有定义顺序。</p>
+<h3 id="Logger-API"><a href="#Logger-API" class="headerlink" title="Logger API"></a>Logger API</h3><p>用于日志记录的API由一组宏和一组窗体日志记录器上的函数logger:Level/1,2,3，它们都是日志记录器的快捷方式 logger:log(Level, Args1,Args2 [,Args3][])。<br>宏是在logger.hrl中定义的，它与指令一起包含在一个模块中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-include_lib(&quot;kernel/include/logger.hrl&quot;).</span><br></pre></td></tr></table></figure>
+<p>使用宏和导出的函数之间的区别在于，宏位置（发起者）信息添加到元数据，并执行延迟评价通过包装记录器在case语句调用，所有只有评估如果事件的日志级别通过主日志级别检查。</p>
+<h3 id="参数和含义"><a href="#参数和含义" class="headerlink" title="参数和含义"></a>参数和含义</h3><p>handlers中的参数<br>1.burst_limit_enable<br>类型：boolean()<br>描述：在logger_proxy中，该值默认为false。在logger_olp中，即获取到的默认的值为true。而且这个值确定是boolean值，否则会修改失败。<br>当开启这个值之后将会和burst_limit_window_time和burst_limit_max_count选项决定的。如果在burst_limit_time时间内处理了burst_limit_max_count数据就会破裂。<br>2.burst_limit_window_time<br>类型：integer()<br>描述：和burst_limit_enable结合使用。默认值是1000。<br>3.burst_limit_max_count<br>类型：integer()<br>描述：和burst_limit_enable结合使用。默认值是500。<br>4.compress_on_rotate<br>类型：boolean()<br>描述：应用于logger_std_h中，在初始化中会被maps提取maps:with，该值会被检测是否为boolean值，如果不是，则会报错，默认值是false。如果该选项开启，会将文件写成文件名.gz格式。结合file_check、max_no_bytes、max_no_file使用。<br>5.file_check<br>类型：integer()<br>描述：默认值是0，应用于logger_std_h中。该值保存的是一个时间间隔。logger系统使用的时间都是erlang:monotonic_time(millisecond)。取的时间是毫秒，就是千分之一秒。这个值待权衡。<br>6.max_no_bytes<br>类型：integer() | infinity<br>描述：默认值是infinity，无限大。设置单位是字节，当文件到了某个大小的时候，就开始压缩。<br>7.max_no_files<br>类型：pos_integer()<br>描述：默认值为0，最多支持多少个文件。<br>8.drop_mode_qlen<br>类型：integer()<br>描述：在代理中使用 默认值是1000。logger_olp中的默认值是200。和sync_mode_qlen、flush_qlen配合使用。这三个选项用于判断负载是否过大。并设置处理方案。首先获得该处理器的消息长度。message_queue_len，如果队列大于FlushQlen则用flush形式处理，如果队列大于DropModeQLen则用drop形式，如果队列大小大于等于SyncModeQLen 则采用同步模式处理。如果不是则采用异步形式处理。<br>9.sync_mode_qlen<br>类型：integer()<br>描述：默认值是10<br>10.flush_qlen<br>类型：integer()<br>描述：默认值是1000<br>11.file<br>类型：string()<br>描述：保存日志文件路径。<br>12.filesync_repeat_interval<br>类型：integer()<br>描述：</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/11/05/erlang_logger/" data-id="ck2l7qb0s00008u027iac4t8m" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/04/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/05/erlang_logger/">Erlang Logger</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/04/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
