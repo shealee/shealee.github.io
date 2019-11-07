@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Erlang Logger | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在Erlang&#x2F;OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang Logger">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;07&#x2F;erlang_logger&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="在Erlang&#x2F;OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-11-07T03:13:01.919Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang_logger" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/07/erlang_logger/" class="article-date">
+  <time datetime="2019-11-07T03:13:01.918Z" itemprop="datePublished">2019-11-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Erlang Logger
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在Erlang/OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。</p>
+<a id="more"></a>
+
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><p>日志事件由日志级别、要记录的消息和元数据组成。</p>
+<p>Logger后端从API转发日志事件，首先通过一组主过滤器，然后通过附加到每个日志处理程序的一组辅助过滤器。辅助过滤器位于以下指定的处理程序过滤器中。每个过滤器集包含一个日志级别检查，然后是零个或多个过滤器函数。</p>
+<p>日志级别用原子表示。在Logger内部，原子被映射到整数值，日志事件通过日志级别检查，检查其日志级别的整数值是否小于或等于当前配置的日志级别。也就是说，如果事件与配置级别相同或更严重，则通过检查。</p>
+<p>每个模块配置的日志级别可以覆盖主日志级别。例如，这是为了允许从系统的特定部分进行更详细的日志记录。可以使用筛选器函数进行比日志级别检查更复杂的筛选。过滤器函数可以根据事件的任何内容停止或传递日志事件。它还可以修改日志事件的所有部分。如果日志事件通过特定处理程序的所有主过滤器和所有处理程序过滤器，Logger将事件转发给处理程序回调。处理程序将事件格式化并将其打印到目的地。直到并包括对处理程序回调的调用在内的所有内容都在客户机进程上执行，即在发出日志事件的进程上执行。是否涉及其他流程取决于处理程序实现。处理程序是按顺序调用的，并且没有定义顺序。</p>
+<h3 id="Logger-API"><a href="#Logger-API" class="headerlink" title="Logger API"></a>Logger API</h3><p>用于日志记录的API由一组宏和一组窗体日志记录器上的函数logger:Level/1,2,3，它们都是日志记录器的快捷方式 logger:log(Level, Args1,Args2 [,Args3][])。<br>宏是在logger.hrl中定义的，它与指令一起包含在一个模块中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-include_lib(&quot;kernel/include/logger.hrl&quot;).</span><br></pre></td></tr></table></figure>
+<p>使用宏和导出的函数之间的区别在于，宏位置（发起者）信息添加到元数据，并执行延迟评价通过包装记录器在case语句调用，所有只有评估如果事件的日志级别通过主日志级别检查。</p>
+<h3 id="logger-std-h"><a href="#logger-std-h" class="headerlink" title="logger_std_h"></a>logger_std_h</h3><p>他的是标准的处理日志。可以将此处理程序的多个实例添加到Logger，每个实例将日志打印standard_io、standard_error或file。<br>处理程序有一个重载保护机制，在日志事件的高负载期间保持处理程序进程和内核应用程序处于活动状态。如果过载保护工作，以及如何配置。请参见下面。</p>
+<h4 id="保护处理程序不超载"><a href="#保护处理程序不超载" class="headerlink" title="保护处理程序不超载"></a>保护处理程序不超载</h4><p>默认的处理程序logger_std_h和logger_disk_log_h具有过载保护机制，这使处理程序能够在高负载期间（当必须处理大量传入日志请求时）存活并保持响应。其工作原理如下：</p>
+<p>消息队列的长度<br>处理程序进程跟踪其消息队列的长度，并在当前长度超过可配置阈值时采用某种形式的操作。其目的是保持处理程序处于或尽可能快地处理程序处于一种状态，在这种状态中它可以跟上传入日志事件的速度。处理程序的内存使用量不能越来越大，因为这最终会导致处理程序崩溃。</p>
+<p>sync_mode_qlen<br>只要消息队列的长度小于此值，就会异步处理所有日志事件。这意味着通过调用Logger API中的日志函数来发送日志事件的客户机进程不会等待处理程序的响应，而是在事件发送后立即继续执行。它不受处理程序将事件打印到日志设备所需时间的影响。如果消息队列大于此值，则处理程序将同步处理日志事件，这意味着发送事件的客户机进程必须等待响应。当处理程序将消息队列降低到低于sync_mode_qlen阈值的级别时，将恢复异步操作。从异步模式切换到同步模式可能会减慢一个或几个繁忙的发送方的日志记录速度，但在许多繁忙的并发发送方的情况下不能充分保护处理程序。<br>默认为10条消息。</p>
+<p>drop_mode_qlen<br>当消息队列的大小超过这个阈值时，处理程序将切换到一种模式，在这种模式中，它将删除发送者想要记录的所有新事件。在这种模式下删除事件意味着对日志函数的调用不会导致消息发送给处理程序，但是函数返回时不采取任何操作。处理程序将继续记录已经在其消息队列中的事件，当消息队列的长度降低到阈值以下时，将恢复同步或异步模式。当处理程序激活或停用drop模式时，有关打印信息将打印到日志中。<br>默认为200条消息。</p>
+<p>flush_qlen<br>如果消息队列的长度增产超过此阈值，则执行刷新（删除）操作。为了刷新事件，处理程序通过在不进行日志记录的循环中接受消息来丢弃消息队列中的消息。等待同步日志请求响应的客户机进程从处理程序接收一个响应，该响应指示请求已被删除。处理程序进程在刷新循环期间增加其优先级，以确保在操作期间没有收到新事件。在执行刷新操作之后，处理程序将在日志中打印关于删除了多少事件的信息。<br>默认为1000条消息。<br>为了使过载保护算法正常工作，需要：<br>sync_mode_qlen =&lt; drop_mode_qlen =&lt; flush_qlen<br>要禁用某些模式，请执行以下操作</p>
+<ul>
+<li>如果sync_mode_qlen设置为0，那么所有日志事件都将被同步处理。也就是说，异步日志记录被禁用。</li>
+<li>如果sync_mode_qlen设置为与drop_mode_qlen相同的值，则禁用同步模式。也就是说，除非调用删除或刷新，否则处理程序始终以异步模式运行。</li>
+<li>如果drop_mode_qlen被设置为与flush_qlen相同的值，那么drop模式将被禁用，并且永远不会发生。</li>
+</ul>
+<p>在高负载情况下，处理程序消息队列的长度很少以线性和可预测的方式增长。相反，无论何时调度处理程序进程，它都可以在消息队列中有几乎任意数量的消息等待。正是由于这个原因，过载保护机制的重点是在检测到较大的队列长度时迅速而彻底地执行操作，例如立即删除或刷新消息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">logger:add_handler(my_standard_h, logger_std_h,</span><br><span class="line">                   #&#123;config =&gt; #&#123;file =&gt; &quot;./system_info.log&quot;,</span><br><span class="line">                                 sync_mode_qlen =&gt; 100,</span><br><span class="line">                                 drop_mode_qlen =&gt; 1000,</span><br><span class="line">                                 flush_qlen =&gt; 2000&#125;&#125;).</span><br></pre></td></tr></table></figure>
+
+<h3 id="参数和含义"><a href="#参数和含义" class="headerlink" title="参数和含义"></a>参数和含义</h3><p>handlers中的参数<br>1.burst_limit_enable<br>类型：boolean()<br>描述：在logger_proxy中，该值默认为false。在logger_olp中，即获取到的默认的值为true。而且这个值确定是boolean值，否则会修改失败。<br>当开启这个值之后将会和burst_limit_window_time和burst_limit_max_count选项决定的。如果在burst_limit_time时间内处理了burst_limit_max_count数据就会破裂。<br>2.burst_limit_window_time<br>类型：integer()<br>描述：和burst_limit_enable结合使用。默认值是1000。<br>3.burst_limit_max_count<br>类型：integer()<br>描述：和burst_limit_enable结合使用。默认值是500。<br>4.compress_on_rotate<br>类型：boolean()<br>描述：应用于logger_std_h中，在初始化中会被maps提取maps:with，该值会被检测是否为boolean值，如果不是，则会报错，默认值是false。如果该选项开启，会将文件写成文件名.gz格式。结合file_check、max_no_bytes、max_no_file使用。<br>5.file_check<br>类型：integer()<br>描述：默认值是0，应用于logger_std_h中。该值保存的是一个时间间隔。logger系统使用的时间都是erlang:monotonic_time(millisecond)。取的时间是毫秒，就是千分之一秒。这个值待权衡。<br>6.max_no_bytes<br>类型：integer() | infinity<br>描述：默认值是infinity，无限大。设置单位是字节，当文件到了某个大小的时候，就开始压缩。<br>7.max_no_files<br>类型：pos_integer()<br>描述：默认值为0，最多支持多少个文件。<br>8.drop_mode_qlen<br>类型：integer()<br>描述：在代理中使用 默认值是1000。logger_olp中的默认值是200。和sync_mode_qlen、flush_qlen配合使用。这三个选项用于判断负载是否过大。并设置处理方案。首先获得该处理器的消息长度。message_queue_len，如果队列大于FlushQlen则用flush形式处理，如果队列大于DropModeQLen则用drop形式，如果队列大小大于等于SyncModeQLen 则采用同步模式处理。如果不是则采用异步形式处理。<br>9.sync_mode_qlen<br>类型：integer()<br>描述：默认值是10<br>10.flush_qlen<br>类型：integer()<br>描述：默认值是1000<br>11.file<br>类型：string()<br>描述：保存日志文件路径。<br>12.filesync_repeat_interval<br>类型：integer()<br>描述：</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/11/07/erlang_logger/" data-id="ck2o4zvu10000zg029pv8h0q4" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/04/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/07/erlang_logger/">Erlang Logger</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/04/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
