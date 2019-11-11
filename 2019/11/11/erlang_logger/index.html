@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="在Erlang&#x2F;OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-11-11T06:15:22.060Z">
+<meta property="og:updated_time" content="2019-11-11T06:20:44.632Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -65,7 +65,7 @@
         <section id="main"><article id="post-erlang_logger" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/11/11/erlang_logger/" class="article-date">
-  <time datetime="2019-11-11T06:15:22.060Z" itemprop="datePublished">2019-11-11</time>
+  <time datetime="2019-11-11T06:20:44.632Z" itemprop="datePublished">2019-11-11</time>
 </a>
     
   </div>
@@ -147,7 +147,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#&#123;sync_mode_qlen =&gt; 500,</span><br><span class="line">  drop_mode_qlen =&gt; 1000,</span><br><span class="line">  flush_qlen =&gt; 5000,</span><br><span class="line">  burst_limit_enable =&gt; false,</span><br><span class="line">  overload_kill_enable =&gt; false&#125;</span><br></pre></td></tr></table></figure>
 <p>对于来自仿真器的日志事件，同步消息传递模式不适用，因为所有消息都是由仿真器异步传递的。Drop模式是通过将system_logger设置为undefined来实现的，这迫使仿真器删除事件，直到再次将其设置回代理pid。<br>代理在向远程节点发送日志事件时使用erlang:send_nosuspend/2。如果不能在不挂起发送方的情况下发送消息，将其删除。这是为了避免阻塞代理进程。</p>
 <h3 id="logger-formatter"><a href="#logger-formatter" class="headerlink" title="logger_formatter"></a>logger_formatter</h3><p>每个Logger handler都有一个已配置的格式化程序，该格式化程序制定为模块和配置术语。格式化程序的目的是将日志事件转换为最终的可打印字符串(unicode:chardata())，该字符串可被写入处理程序的输出设备。<br>logger_formatter是Logger使用的默认格式化程序。</p>
-<h4 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h4><p>config() =<br>#{<br>chars_limit = integer() &gt;= 1 | unlimited,<br>depth =&gt; integer() &gt;= 1 | unlimited,<br>legacy_header =&gt; boolean(),<br>max_size =&gt; integer() &gt;= 1 | unlimited,<br>report_cb =&gt; logger:report_cb(),<br>single_line =&gt; boolean(),<br>template =&gt; template(),<br>time_designator =&gt; byte(),<br>time_offset =&gt; integer() | [byte()]<br>}<br>logger_formatter的配置是map，可以将以下键设置为配置参数：<br>1.chars_limit = integer() &gt; 0 | unlimited<br>填写一个正整数，表示在调用io_lib:format/3时使用相同名称的选项的值。此值限制为每个日志事件打印的字符总数。这是一个软限制。有关硬截断限制，请参见选项max_size。默认为:unlimited。<br>2.depth = integer() &gt; 0 | unlimited<br>表示此格式程序应打印的最大深度的正整数。将格式控制的<del>p和～w分别替换为</del>p和<del>w，值作为深度参数。默认为：unlimited。<br>3.legacy_header = boolean()<br>如果设置为true，则头字段将添加到logger_formatter的元数据部分。该字段的值是一个与旧的error_logger事件处理程序创建的头类似的字符串。通过将列表[logger_formatter, header]添加到模板中，可以将它包含在日志事件中。默认值为false。<br>4.max_size = integer() &gt; 0 | unlimited<br>表示此格式化程序返回的字符串的绝对最大大小的正整数。如果格式化的字符串更长，可能会受到chars_limit或depth的限制之后，它将被截断。默认为unlimited.<br>5.report_cb = logger:report_cb()<br>格式化程序使用报表回调将报表上的日志消息转换为格式字符串和参数。可以在日志事件的元数据中指定报表回调。如果元数据中不存在报表回调，则logger_formatter将使用logger:format_report/1作为默认回调。<br>如果设置了此配置参数，它将替换默认的报表回调以及在元数据中找到的任何报表回调。也就是说，所有报告都由这个配置的函数转换。<br>6.single_line = boolean()<br>如果设置为true，则将每个日志事件打印为一行。为此，logger_formatter将字符串格式中的所有</del>p和~p控制序列的字段宽度设置为0，并将消息中的所有换行符替换为“，”。删除换行后直接跟随的空白。默认值为true。<br>7.template = template()<br>该模版描述了如果通过组合来自日志事件的不同数据值来组合格式化的字符串。<br>8.time_designator = byte()<br>imestamps是根据RFC3339进行格式化的，时间指示器是用作日期和时间分隔符的字符。默认为$T。<br>此参数的值用作日历的time_designator calendar:system_time_to_rcf3339/2.<br>9.time_offset = integer() | [byte()]<br>格式化时间戳使用的时间偏移量，可以是字符串，也可以是整数。适用于时区。</p>
+<h4 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h4><p>config() =<br>#{<br>chars_limit = integer() &gt;= 1 | unlimited,<br>depth =&gt; integer() &gt;= 1 | unlimited,<br>legacy_header =&gt; boolean(),<br>max_size =&gt; integer() &gt;= 1 | unlimited,<br>report_cb =&gt; logger:report_cb(),<br>single_line =&gt; boolean(),<br>template =&gt; template(),<br>time_designator =&gt; byte(),<br>time_offset =&gt; integer() | [byte()]<br>}<br>logger_formatter的配置是map，可以将以下键设置为配置参数：<br>1.chars_limit = integer() &gt; 0 | unlimited<br>填写一个正整数，表示在调用io_lib:format/3时使用相同名称的选项的值。此值限制为每个日志事件打印的字符总数。这是一个软限制。有关硬截断限制，请参见选项max_size。默认为:unlimited。<br>2.depth = integer() &gt; 0 | unlimited<br>表示此格式程序应打印的最大深度的正整数。将格式控制的~p和~w分别替换为~p和~w，值作为深度参数。默认为：unlimited。<br>3.legacy_header = boolean()<br>如果设置为true，则头字段将添加到logger_formatter的元数据部分。该字段的值是一个与旧的error_logger事件处理程序创建的头类似的字符串。通过将列表[logger_formatter, header]添加到模板中，可以将它包含在日志事件中。默认值为false。<br>4.max_size = integer() &gt; 0 | unlimited<br>表示此格式化程序返回的字符串的绝对最大大小的正整数。如果格式化的字符串更长，可能会受到chars_limit或depth的限制之后，它将被截断。默认为unlimited.<br>5.report_cb = logger:report_cb()<br>格式化程序使用报表回调将报表上的日志消息转换为格式字符串和参数。可以在日志事件的元数据中指定报表回调。如果元数据中不存在报表回调，则logger_formatter将使用logger:format_report/1作为默认回调。<br>如果设置了此配置参数，它将替换默认的报表回调以及在元数据中找到的任何报表回调。也就是说，所有报告都由这个配置的函数转换。<br>6.single_line = boolean()<br>如果设置为true，则将每个日志事件打印为一行。为此，logger_formatter将字符串格式中的所有p和~p控制序列的字段宽度设置为0，并将消息中的所有换行符替换为“，”。删除换行后直接跟随的空白。默认值为true。<br>7.template = template()<br>该模版描述了如果通过组合来自日志事件的不同数据值来组合格式化的字符串。<br>8.time_designator = byte()<br>imestamps是根据RFC3339进行格式化的，时间指示器是用作日期和时间分隔符的字符。默认为$T。<br>此参数的值用作日历的time_designator calendar:system_time_to_rcf3339/2.<br>9.time_offset = integer() | [byte()]<br>格式化时间戳使用的时间偏移量，可以是字符串，也可以是整数。适用于时区。</p>
 <h3 id="数据模型-template"><a href="#数据模型-template" class="headerlink" title="数据模型 template"></a>数据模型 template</h3><p>template() = [metakey() | {metakey(), template(), template()} | string()]<br>该模板是atoms、atom lists、tuples和strings。atoms级别或msh分别作为严重性级别和日志消息的占位符。其它atoms或atom lists被解释为元数据的占位符，在元数据是嵌套映射时，atoms被期望匹配顶级键，而atom lists表示子键的路径。例如，列表[key1,key2]被下面嵌套映射中的key2字段的值替换。atom key1本身被key1字段的完整值替换。这些值转换为字符串。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#&#123;key1 =&gt; #&#123;key2 =&gt; my_value,</span><br><span class="line">            ...&#125;</span><br><span class="line">  ...&#125;</span><br></pre></td></tr></table></figure>
 <p>模版中的元组表示是否存在元数据键的测试。例如，下面的元组表示，如果再元数据映射中存在key1，则打印”key1=Value”，其中Value是key1再元数据映射中关联的值。如果key1不存在，则什么也不打印。</p>
@@ -156,7 +156,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/11/erlang_logger/" data-id="ck2u1916m0000o60251b90thn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/11/erlang_logger/" data-id="ck2u1b4920000ot024ke809cc" class="article-share-link">Share</a>
       
       
     </footer>
