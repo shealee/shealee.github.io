@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="在Erlang&#x2F;OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-11-11T06:20:44.632Z">
+<meta property="og:updated_time" content="2019-11-11T06:24:12.467Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -65,7 +65,7 @@
         <section id="main"><article id="post-erlang_logger" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/11/11/erlang_logger/" class="article-date">
-  <time datetime="2019-11-11T06:20:44.632Z" itemprop="datePublished">2019-11-11</time>
+  <time datetime="2019-11-11T06:24:12.467Z" itemprop="datePublished">2019-11-11</time>
 </a>
     
   </div>
@@ -153,10 +153,14 @@
 <p>模版中的元组表示是否存在元数据键的测试。例如，下面的元组表示，如果再元数据映射中存在key1，则打印”key1=Value”，其中Value是key1再元数据映射中关联的值。如果key1不存在，则什么也不打印。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;key1, [&quot;key1=&quot;,key1], []&#125;</span><br></pre></td></tr></table></figure>
 
+<h3 id="logger-filters-过滤器"><a href="#logger-filters-过滤器" class="headerlink" title="logger_filters 过滤器"></a>logger_filters 过滤器</h3><p>过滤器可以是主处理程序，也可以附加到特定的处理程序。Logger首先调用主过滤器，如果它们都通过，它将每个处理程序调用处理程序过滤器。Logger只在附加到处理程序的所有过滤器都通过时才调用处理程序回调。<br>过滤器定义为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;FilterFun, Extra&#125;</span><br></pre></td></tr></table></figure>
+<p>FilterFun是arity为2的函数，而Extra是任意项。在应用过滤器时，Logger调用函数，日志事件作为第一个参数，Extra的值作为第二个参数。类型定义在logger:filter().<br>过滤器函数可以返回stop、ignore或(possibly modified)日志事件。<br>如果返回stop，则立即丢弃日志事件。如果筛选器是主筛选器，则不会调用处理程序筛选器或回调。如果是处理程序筛选器，则不调用相应的处理程序回调，但将日志事件转发到附加下一个处理程序（如果有）的筛选器。<br>如果返回日志事件，则使用返回的值作为第一个参数调用下一个筛选器函数。也就是说，如果一个过滤器函数修改了日志事件，下一个过滤器函数将接收修改后的时间。最后一个过滤器函数返回的值是处理程序回调接受的值。<br>如果filter函数返回ignore，则意味着它不识别日志事件，因此将事件的命运留给其他过滤器决定。<br>配置选项filter_default指定在所有筛选器函数都返回ignore或不存在筛选器时的行为。filter_default默认设置为log，这意味着如果现有的过滤器都忽略一个日志事件，Logger将该事件转发给处理程序回调。如果将filter_default设置为stop，则Logger将丢弃此类事件。<br>主过滤器由记录器 logger:add_primary_filter/2添加，由记录器 logger:remove_primary_filter/1删除。它们也可以通过内核配置参数记录器在系统时添加。<br>处理程序过滤器用logger:add_handle_filter/3添加，用logger:remove_handle_filter/2删除。当使用logger:add_handle/3或通过内核配置参数logger添加一个处理程序时，也可以直接在配置中指定它们。<br>要查看当前系统中安装了哪些过滤器，可以使用logger:get_config/0，或者logger:get_primary_config/0和logger:get_handle_config/1。筛选器按应用顺序列出，即首先应用列表中的第一个筛选器，依次类推。<br>为了方便，内置了以下过滤器：<br>1.logger_filters:domain/2<br>提供了一种基于元数据中域字段过滤日志事件的方法。<br>2.logger_filters:level/2<br>提供了一种基于日志级别过滤日志事件的方法。<br>3.logger_filters:progress/2<br>停止或允许来自supervisor和application_controller的进度报告。<br>4.logger_filters:remote_gl/2<br>停止或允许来自远程节点上有其组长的进程的日志事件。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/11/erlang_logger/" data-id="ck2u1b4920000ot024ke809cc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/11/erlang_logger/" data-id="ck2u1kdem0000rj02cufq6ywu" class="article-share-link">Share</a>
       
       
     </footer>
