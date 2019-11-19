@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Erlang HTTP | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="该文档用于提供erlang Http常用的一些含义和处理http请求。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang HTTP">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;19&#x2F;erlang_http&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="该文档用于提供erlang Http常用的一些含义和处理http请求。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-11-19T11:19:51.114Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang_http" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/19/erlang_http/" class="article-date">
+  <time datetime="2019-11-19T11:19:51.114Z" itemprop="datePublished">2019-11-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Erlang HTTP
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>该文档用于提供erlang Http常用的一些含义和处理http请求。</p>
+<a id="more"></a>
+<h2 id="HTTP-Client"><a href="#HTTP-Client" class="headerlink" title="HTTP Client"></a>HTTP Client</h2><h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>启动Inets应用程序启动HTTP客户端默认配置文件，然后该Erlang节点上的所有进程都可以使用该配置文件。其他配置文件也可以在应用程序启动时启动，或者配置可以在运行时动态启动和停止。每个客户端配置文件生成一个新进程来处理每个请求，除非持久连接可以使用或不使用管道。客户端添加一个Host报头和一个空的te报头，如果在请求中没有这样的报头。<br>客户端支持IPv6，只要底层机制也这样做。<br>下面的内容将放在Erlang节点应用程序配置文件中，以便在应用程序启动时启动配置文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&#123;inets, [&#123;services, [&#123;httpc, PropertyList&#125;]&#125;]&#125;]</span><br></pre></td></tr></table></figure>
+
+<h3 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h3><p>启动Inet</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">inets:start().</span><br></pre></td></tr></table></figure>
+<p>以下调用使用默认的客户端配置文件。使用代理，但对本地主机的请求除外。这适用于以下所有请求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2 &gt; httpc:set_options([&#123;proxy, &#123;&#123;&quot;www-proxy.mycompany.com&quot;, 8000&#125;,</span><br><span class="line">[&quot;localhost&quot;]&#125;&#125;]).</span><br><span class="line">ok</span><br></pre></td></tr></table></figure>
+<p>下面是一个很普通的同步请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">3 &gt; &#123;ok, &#123;&#123;Version, 200, ReasonPhrase&#125;, Headers, Body&#125;&#125; =</span><br><span class="line">a</span><br></pre></td></tr></table></figure>
+<p>使用所有的默认值，get请求可以这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4 &gt; &#123;ok, &#123;&#123;Version, 200, ReasonPhrase&#125;, Headers, Body&#125;&#125; =</span><br><span class="line">httpc:request(&quot;http://www.erlang.org&quot;).</span><br></pre></td></tr></table></figure>
+<p>下面是一个普通的异步请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5 &gt; &#123;ok, RequestId&#125; =</span><br><span class="line">httpc:request(get, &#123;&quot;http://www.erlang.org&quot;, []&#125;, [], [&#123;sync, false&#125;]).</span><br></pre></td></tr></table></figure>
+<p>结果以{http, {RequestId, result}}的形式发送到调用进程。<br>在这种情况下，调用进程是shell，因此接收到以下结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">6 &gt; receive &#123;http, &#123;RequestId, Result&#125;&#125; -&gt; ok after 500 -&gt; error end.</span><br><span class="line">ok</span><br></pre></td></tr></table></figure>
+<p>这发送一个请求与指定的连接头：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">7 &gt; &#123;ok, &#123;&#123;NewVersion, 200, NewReasonPhrase&#125;, NewHeaders, NewBody&#125;&#125; =</span><br><span class="line">httpc:request(get, &#123;&quot;http://www.erlang.org&quot;, [&#123;&quot;connection&quot;, &quot;close&quot;&#125;]&#125;,[], []).</span><br></pre></td></tr></table></figure>
+<p>通过unix域套接字发送一个HTTP请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">8 &gt; httpc:set_options([&#123;ipfamily, local&#125;,&#123;unix_socket,&quot;/tmp/unix_socket/consul_http.sock&quot;&#125;]).</span><br><span class="line">9 &gt; &#123;ok, &#123;&#123;NewVersion, 200, NewReasonPhrase&#125;, NewHeaders, NewBody&#125;&#125; = httpc:request(put, &#123;&quot;http:///v1/kv/foo&quot;, [], [], &quot;hello&quot;&#125;, [], []).</span><br></pre></td></tr></table></figure>
+<p>启动HTTP客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">10 &gt; &#123;ok, Pid&#125; = inets:start(httpc, [&#123;profile, foo&#125;]).</span><br><span class="line">&#123;ok, &lt;0.45.0&gt;&#125;</span><br></pre></td></tr></table></figure>
+<p>新的配置文件没有代理设置，所以连接被拒绝：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">11 &gt; httpc:request(&quot;http://www.erlang.org&quot;, foo).</span><br><span class="line">&#123;error, econnrefused&#125;</span><br></pre></td></tr></table></figure>
+<p>关闭客户端配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">12 &gt; inets:stop(httpc, foo).</span><br><span class="line">ok</span><br></pre></td></tr></table></figure>
+<p>除此之外，还可以使用Pid代替关闭。</p>
+<h2 id="httpc"><a href="#httpc" class="headerlink" title="httpc"></a>httpc</h2><p>httpc模块是在OTP R13B04中引入的。该模块根据RFC 2616向HTTP-1.1兼容的客户端提供API。不支持缓存。<br>当启动Inets应用程序时，将启动默认配置文件的管理器进程。此API中不显式使用概要文件的函数将访问默认概要文件。配置文件跟踪代理选项、cookie和其他可应用于多个请求的选项。<br>如果使用模式https，则必须启动SSL应用程序。当https链接需要通过代理时，使用HTTP-1.1的CONNECT方法扩展来建立隧道，然后将连接升级到TLS。但是，不支持根据RFC 2817进行的“TLS升级”。<br>管道仅在设置管道超时时使用，否则将使用不适用管道的持久连接。也就是说，客户机总是在发送下一个请求之前等待前一个响应。</p>
+<h3 id="HTTP-数据类型"><a href="#HTTP-数据类型" class="headerlink" title="HTTP 数据类型"></a>HTTP 数据类型</h3><p>method() = head | get | put | post | trace | options | delete | patch<br>request() = {url(), headers()} | {url(), headers(), content_type(), body()}<br>url() = string()<br>status_line() = {http_version(), status_code(), reason_phrase()}<br>http_version() = string() 例如”http/1.1”<br>status_code() = integer()<br>reason_phrase() = string()<br>content_type() = string()<br>headers() = [header()]<br>header() = {field(), value()}<br>field() = string()<br>value() = string()<br>body() = string() | binary() | {fun(accumulator) -&gt; body_processing_result(), accumulator()}<br>accumulator() = term(),<br>filename() = string().</p>
+<h3 id="Http客户服务启动-停止"><a href="#Http客户服务启动-停止" class="headerlink" title="Http客户服务启动/停止"></a>Http客户服务启动/停止</h3><p>HTTP客户机可以配置为在Inets应用程序启动时启动，或者在运行时通过调用Inets应用程序API inets:start(httpc, ServiceConfig)或Inets:start(httpc, ServiceConfig, How)来动态启动。<br>配置如下：<br>{profile, profile()}<br>配置文件的名称。这个选项是强制性的。<br>{data_dir, path()}<br>配置文件可以保存持久数据的目录。如果省略，所有cookie将会被视为会话cookie。<br>可以使用inets:stop(httpc, Pid)或inets:stop(httpc, Profile)来停止客户机。</p>
+<h3 id="常用函数"><a href="#常用函数" class="headerlink" title="常用函数"></a>常用函数</h3><p>1.cancel_request(RequestId) -&gt;<br>  cancel_request(RequestId, Profile) -&gt; ok.<br>RequestId= request_id() request/4函数返回的唯一标识符。<br>Profile = profile() | pid()<br>当以stand_alone模式启动时，只能使用pid。<br>取消异步HTTP请求。注意，这并不保证请求响应不会被传递。因为它是异步的，所以当取消到达时请求可能已经完成。</p>
+<p>2.cookie_header(Url) -&gt;<br>  cookie_header(Url, Profile | Opts) -&gt; header() | {error, Reason}<br>  cookie_header(Url, Opts, Profile) -&gt; header() | {error, Reason}<br>Url = url()<br>Opts = [cookie_header_opt()]<br>Profile = profile() | pid() 当以stand_alone模式启动时<br>cookie_header_opt() = {ipv6_host_with_brackets, boolean()}<br>返回在使用profile配置文件向Url发出请求时的cookie头。如果没有指定配置文件，则使用默认配置文件。<br>选项ipv6_host_with_bracket处理如何解析IPv6地址。</p>
+<p>3.get_options(OptionItems) -&gt; {ok, value} | {error, Reason}<br>  get_options(OptionItems, Profile) -&gt; {ok, value} | {error, Reason}<br>OptionItems = all | [option_item()]<br>option_item() = proxy | https_proxy | max_sessions | keep_alive_timeout | max_keep_alive_length | pipeline_timeout | max_pipeline_length | cookies | ipfamily | ip | port | socket_opts | verbose | unix_socket<br>Values = [{option_item(), term()}]<br>Reason = term()<br>检索客户端当前使用的选项。</p>
+<p>4.info() -&gt; list()<br>  info(Profile) -&gt; list()<br>Profile = profile() | pid()<br>生成杂项信息的列表。用于调试。如果没有指定配置文件，则使用默认配置文件。</p>
+<p>5.reset_cookies() -&gt; void()<br>  reset_cookies(Profile) -&gt; void().<br>重置（清除）指定配置文件的cookie数据库。如果没有指定配置文件，则使用默认配置文件。</p>
+<p>6.request(Url) -&gt;<br>  request(Url, Profile) -&gt; {ok, Result} | {error, Reason}<br>Url = url()<br>Result = {status_line(), headers(), Body} | {status_code(), Body} | request_id()<br>Body = string() | binary()<br>Profile = profile() | pid()<br>Reason = term()<br>调用这个函数等价于httpc:request(get, {Url,[]}, [], []).</p>
+<p>7.request(Method, Request, HTTPOptions, Options) -&gt;<br>  request(Method, Request, HTTPOptions, Options, Profile) -&gt; {ok, Result} | {ok, saved_to_file} | {error, Reason}<br>Method = method()<br>Request = request()<br>HTTPOptions = http_options()<br>http_options() = [http_option()]<br>http_option() = {timeout, timeout()} | {connect_timeout, timeout()} | {ssl, ssloptions()} | {essl, ssloptions()} | {autoredirect, boolean()} | {proxy_auth, {userstring(), passwordstring()}} | {version, http_version()} | {relaxed, boolean()}<br>timeout() = integer() &gt;= 0 | infinity<br>Options = [option()]<br>option() = {sync, boolean()} | {stream, stream_to()} | {body_format, body_format()} | {full_result, boolean()} | {headers_as_is, boolean()} | {socket_opts, socket_opts()} | {receiver, receiver()} | {ipv6_host_with_brackets, boolean()}<br>stream_to() = none | self | {self, once} | filename()<br>socket_opts() = [socket_opt()]<br>receiver() = pid() | function()/1 | {Module, Function, Args}<br>Module = atom()<br>Function = atom()<br>Args = list()<br>body_format() = string | binary<br>Result = {status_line(), headers(), Body} | {status_code(), Body} | request_id()<br>Body = string() | binary()<br>Profile = profile() | pid()<br>Reason = term()</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/11/19/erlang_http/" data-id="ck35rnt3b0000k9026sk10jhu" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/11/erlang_logger/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Erlang Logger</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/19/erlang_http/">Erlang HTTP</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/11/erlang_logger/">Erlang Logger</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/11/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
