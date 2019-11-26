@@ -5,16 +5,16 @@
   
 
   
-  <title>Hello World | Hexo</title>
+  <title>Erlang Compile | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+  <meta name="description" content="该文档用于对标准Erlang编译器的一些说明。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;11&#x2F;hello-world&#x2F;index.html">
+<meta property="og:title" content="Erlang Compile">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;26&#x2F;erlang_compile&#x2F;index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+<meta property="og:description" content="该文档用于对标准Erlang编译器的一些说明。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-11-11T03:46:49.899Z">
+<meta property="og:updated_time" content="2019-11-26T09:21:26.196Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -62,10 +62,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-erlang_compile" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/11/11/hello-world/" class="article-date">
-  <time datetime="2019-11-11T03:46:49.899Z" itemprop="datePublished">2019-11-11</time>
+    <a href="/2019/11/26/erlang_compile/" class="article-date">
+  <time datetime="2019-11-26T09:21:26.196Z" itemprop="datePublished">2019-11-26</time>
 </a>
     
   </div>
@@ -76,7 +76,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Hello World
+      Erlang Compile
     </h1>
   
 
@@ -84,26 +84,24 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+        <p>该文档用于对标准Erlang编译器的一些说明。</p>
 <a id="more"></a>
 
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+<h2 id="Erlang-Compile"><a href="#Erlang-Compile" class="headerlink" title="Erlang Compile"></a>Erlang Compile</h2><h3 id="Compiler"><a href="#Compiler" class="headerlink" title="Compiler"></a>Compiler</h3><p>这个模块提供了一个到标准Erlang编译器的接口。它可以生成一个包含目标代码的新文件，也可以返回一个可以直接加载的二进制文件。</p>
+<h4 id="导出内容"><a href="#导出内容" class="headerlink" title="导出内容"></a>导出内容</h4><p>1.env_compiler_options()<br>通过环境变量ERL_COMPILER_OPTIONS返回编辑器选项。如果值是列表，则按原样返回。如果它不是一个列表，则将其放入一个列表。</p>
+<p>2.file(File)<br>与file(file, [verbose, repost_errors, report_warnings])相同。</p>
+<p>3.file(File, Options) -&gt; CompRet<br>CompRet = ModRet | BinRet | ErrRet<br>ModRet = {ok, ModuleName} | {ok, ModuleName, Warnings}<br>BinRet = {ok, ModuleName, Binary} | {ok, ModuleName, Binary, Warnings}<br>ErrRet = error | {error, Errors, Warnings}<br>编译file文件中的代码，该文件是一个含.erl扩展名的Erlang源代码文件。选项决定编译器的行为。<br>如果成功，返回{ok, ModuleName};如果有错误，返回error。如果编译成功且没有错误，则创建一个目标代码文件。如果源代码中的模块名与输出文件的基本名不相同，则认为是错误。<br>有以下可用的选项：</p>
+<ul>
+<li>basic_validation<br>此选项是测试模块是否成功编译的快速方法。这对于希望验证其发出的代码生成器非常有用。不生成任何代码。如果启用了警告（例如未使用的变量和函数的警告）也会返回。<br>使用选项strong_validdation生成编译器将生成的所有警告。</li>
+<li>strong_validation<br>类似于选项basic_validation。不会生成任何代码，但是会运行更多的编译器传递，以确保生成由优化传递生成的警告（例如不匹配的子句，或者保证在运行时发生异常而失败的表达式）。</li>
+<li>binary<br>编译器以二进制形式返回目标代码，而不是创建目标文件。如果成功，编译器返回{ok, ModuleName, Binary}。</li>
+<li>bin_opt_info<br>编译器将发出关于二进制匹配优化（成功和不成功）的信息警告。有关更多信息，请参见效率指南中关于bin_opt_info。</li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/11/hello-world/" data-id="ck3fsrqeo00038402a1gzej8i" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ck3fsrqeb0002840207tcfeqr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -112,15 +110,20 @@
     
 <nav id="article-nav">
   
-    <a href="/2019/11/11/erlang_logger/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/11/26/erlang_myths/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Erlang Logger
+          Erlang中的谬误
         
       </div>
     </a>
   
+  
+    <a href="/2019/11/24/erlang_http/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Erlang HTTP</div>
+    </a>
   
 </nav>
 
