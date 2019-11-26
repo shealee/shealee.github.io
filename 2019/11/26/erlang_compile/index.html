@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="该文档用于对标准Erlang编译器的一些说明。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-11-26T09:21:26.196Z">
+<meta property="og:updated_time" content="2019-11-26T12:23:30.701Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -65,7 +65,7 @@
         <section id="main"><article id="post-erlang_compile" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/11/26/erlang_compile/" class="article-date">
-  <time datetime="2019-11-26T09:21:26.196Z" itemprop="datePublished">2019-11-26</time>
+  <time datetime="2019-11-26T12:23:30.700Z" itemprop="datePublished">2019-11-26</time>
 </a>
     
   </div>
@@ -96,12 +96,16 @@
 <li>strong_validation<br>类似于选项basic_validation。不会生成任何代码，但是会运行更多的编译器传递，以确保生成由优化传递生成的警告（例如不匹配的子句，或者保证在运行时发生异常而失败的表达式）。</li>
 <li>binary<br>编译器以二进制形式返回目标代码，而不是创建目标文件。如果成功，编译器返回{ok, ModuleName, Binary}。</li>
 <li>bin_opt_info<br>编译器将发出关于二进制匹配优化（成功和不成功）的信息警告。有关更多信息，请参见效率指南中关于bin_opt_info。</li>
+<li>{compile_info, [{atom(), term()}]}<br>允许编译器构建在compile之上，将额外的编译元数据附加到生成的beam文件中的compile_info块。<br>如果支持确定性选项并由用户提供，则建议编译器删除所有非确定性信息。</li>
+<li>compressed<br>编译器将压缩生成的目标代码，这对于嵌入式系统非常有用。</li>
+<li>debug_info<br>在编译的beam模块的debug_info模块中包含Erlang抽象格式的调试信息。Debugger, Xref和Cover等工具要求包含调试信息。<br>警告：可以根据调试信息重构源代码。使用加密的调试信息(encrypt_debug_info)来防止这种情况。<br>有关详细信息，see beam_lib(3)。</li>
+<li>{debug_info, {Backend, Data}}<br>以后端模块的形式包含自定义调试信息，并在以编译的beam模块中包含自定义数据。给定的模块必须实现一个debug_info/4函数，并负责生成不同的代码表示形式，如beam_lib(3)下的debug_info中所述。<br>警告：可以根据调试信息重构源代码。使用加密的调试信息{encrypt_debug_info}来防止这种情况。</li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ck3fsrqeb0002840207tcfeqr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ck3fu0fzz0000bd0276jbbcwp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -110,19 +114,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2019/11/26/erlang_myths/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Erlang中的谬误
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/11/24/erlang_http/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/11/26/erlang_myths/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Erlang HTTP</div>
+      <div class="article-nav-title">Erlang中的谬误</div>
     </a>
   
 </nav>
@@ -159,11 +154,11 @@
       <ul>
         
           <li>
-            <a href="/2019/11/26/erlang_myths/">Erlang中的谬误</a>
+            <a href="/2019/11/26/erlang_compile/">Erlang Compile</a>
           </li>
         
           <li>
-            <a href="/2019/11/26/erlang_compile/">Erlang Compile</a>
+            <a href="/2019/11/26/erlang_myths/">Erlang中的谬误</a>
           </li>
         
           <li>
