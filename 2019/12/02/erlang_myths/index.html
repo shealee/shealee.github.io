@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Erlang性能指南 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文档主要关注Erlang性能提升方面，包括揭示普遍人觉得的谬误、常见的警告。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang性能指南">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;02&#x2F;erlang_myths&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文档主要关注Erlang性能提升方面，包括揭示普遍人觉得的谬误、常见的警告。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-12-02T03:16:21.407Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang_myths" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/12/02/erlang_myths/" class="article-date">
+  <time datetime="2019-12-02T03:16:21.406Z" itemprop="datePublished">2019-12-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Erlang性能指南
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文档主要关注Erlang性能提升方面，包括揭示普遍人觉得的谬误、常见的警告。</p>
+<a id="more"></a>
+
+<h2 id="谬误"><a href="#谬误" class="headerlink" title="谬误"></a>谬误</h2><h3 id="谬误1-Fun是很慢的"><a href="#谬误1-Fun是很慢的" class="headerlink" title="谬误1 Fun是很慢的"></a>谬误1 Fun是很慢的</h3><p>Funs曾经非常慢，比apply/3慢。最初，funs只是compiler trickery，普通的元组，apply/3和大量的ingenuity实现的。<br>但这是历史。Funs在R6B中有自己的数据类型，在R7B中进一步优化。现在，funs的调用成本大致在本地函数调用和apply/3之间。</p>
+<h3 id="谬误2-列表推导很慢"><a href="#谬误2-列表推导很慢" class="headerlink" title="谬误2 列表推导很慢"></a>谬误2 列表推导很慢</h3><p>列表推导过去是使用funs去实现的，在过去funs确实很慢。<br>现在，编译器将列表推导重写为普通的递归函数。使用尾部递归函数并在末尾执行反向操作仍然会更快。</p>
+<h3 id="谬误3-列表减法（”–”操作符）很慢"><a href="#谬误3-列表减法（”–”操作符）很慢" class="headerlink" title="谬误3 列表减法（”–”操作符）很慢"></a>谬误3 列表减法（”–”操作符）很慢</h3><p>列表减法过去的运行时复杂度与操作数长度的乘积成正比，所以当两个列表都很长时，它的运行速度非常慢。<br>OTP22的运行时复杂度是“nlogn”，即使两个列表都很长，操作也会很快完成。事实上，在使用ordset:subtract/2将两个列表转换为有序集之前，它比通常使用的方法更快，占用的内存更少。</p>
+<h3 id="谬误4-尾部递归函数比递归函数快得多"><a href="#谬误4-尾部递归函数比递归函数快得多" class="headerlink" title="谬误4 尾部递归函数比递归函数快得多"></a>谬误4 尾部递归函数比递归函数快得多</h3><p>使用尾部递归函数以相反的方式构建列表，然后调用lists:reverse/1比主体递归函数以正确比尾部递归使用更多的内存。<br>在R12B之前，这在某种程度上是正确的。在R7B之前更是如此。今天，情况就不一样了。主体递归函数通常使用相同的内存。通常不可能预测尾部递归版本和主体递归版本哪个更快。因此，使用使代码更简洁的版本。</p>
+<h3 id="谬误5-操作符”-”总是不好的。"><a href="#谬误5-操作符”-”总是不好的。" class="headerlink" title="谬误5 操作符”++”总是不好的。"></a>谬误5 操作符”++”总是不好的。</h3><p>不推荐的写法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">naive_reverse([H | T]) -&gt;</span><br><span class="line">    naive_reverse(T) ++ [H];</span><br><span class="line">naive_reverse([]) -&gt;</span><br><span class="line">    [].</span><br></pre></td></tr></table></figure>
+<p>当++操作符复制它的左操作数时，结果被重复复制，导致二次复杂度。<br>但是使用++如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">naive_but_ok_reverse([H | T], Acc) -&gt;</span><br><span class="line">    naive_but_ok_reverse(T, [H] ++ Acc);</span><br><span class="line">naive_but_ok_reverse([], Acc) -&gt;</span><br><span class="line">    Acc.</span><br></pre></td></tr></table></figure>
+<p>每个元素只复制一次。不断增长的结果Acc是++操作符的正确操作数，它不会被复制。<br>有经验的程序员会这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vanilla_reverse([H | T], Acc) -&gt;</span><br><span class="line">    vanilla_reverse(T, [H | Acc]);</span><br><span class="line">vanilla_reverse([], Acc) -&gt;</span><br><span class="line">    Acc.</span><br></pre></td></tr></table></figure>
+<p>这样做的效率略高一些，因为在这里构建list元素并不是为了直接复制它。（或者，如果编译器不自动将[H] ++ Acc重写为[H | Acc]，效率会更高。）</p>
+<h3 id="谬误6-字符串都是很缓慢的"><a href="#谬误6-字符串都是很缓慢的" class="headerlink" title="谬误6 字符串都是很缓慢的"></a>谬误6 字符串都是很缓慢的</h3><p>如果处理不当，字符串处理可能会很缓慢。在Erlang中，您需要更多的考虑如何使用字符串，并选择适当的表达形式。如果使用正则表达式，请使用STDLIB中的re模块，而不是过时的regexp模块。</p>
+<h3 id="谬误7-修复一个Dets文件非常慢"><a href="#谬误7-修复一个Dets文件非常慢" class="headerlink" title="谬误7 修复一个Dets文件非常慢"></a>谬误7 修复一个Dets文件非常慢</h3><p>修复时间仍然与文件中的记录数量成比例，但是Dets修复在过去要慢得多。Dets被大量重写和改进。</p>
+<h3 id="谬误8-BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）"><a href="#谬误8-BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）" class="headerlink" title="谬误8 BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）"></a>谬误8 BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）</h3><p>BEAM是一个基于寄存器的虚拟机。它有1024个虚拟寄存器，用于保存临时值和在调用函数时传递参数。需要在函数调用后存活的变量被保存在堆栈中。<br>BEAM是一个线程代码解析器。每条指令都直接指向可执行的c代码，使得指令调度非常快。</p>
+<h3 id="谬误9-当不使用变量时，使用-来加速程序"><a href="#谬误9-当不使用变量时，使用-来加速程序" class="headerlink" title="谬误9 当不使用变量时，使用_来加速程序"></a>谬误9 当不使用变量时，使用_来加速程序</h3><p>这曾经是真的，但是从R6B波束编译器可以看到一个变量没有被使用。<br>类似地，在源代码级别上的细微转换（例如将case语句转换为函数顶层的子句）很少会对生成的代码产生任何影响。</p>
+<h3 id="NIF总是会加速你的程序"><a href="#NIF总是会加速你的程序" class="headerlink" title="NIF总是会加速你的程序"></a>NIF总是会加速你的程序</h3><p>将Erlang代码重写为NIF以使其更快应该被视为最后的手段。它只能保证是危险的，但不能保证加速程序。<br>在每个NIF调用中做太多的工作将降低VM的响应能力。做的工作太少可能意味着NIF中更快处理的增益被调用NIF和检查参数的开销所抵消。<br>在编写NIF之前，一定要阅读关于长时间运行的NIFs的内容。</p>
+<h2 id="警告"><a href="#警告" class="headerlink" title="警告"></a>警告</h2><p>本节列出一些需要注意的模块和BIFs，不仅仅是从性能的角度来看。</p>
+<h3 id="Timer-Module"><a href="#Timer-Module" class="headerlink" title="Timer Module"></a>Timer Module</h3><p>使用erlang:send_after/3和erlang:start_timer/3创建计时器比使用STDLIB中的计时器模块提供的计时器要高效得多。定时器模块使用一个单独的进程来管理计时器。如果许多进程频繁地创建和取消计时器（特别是在使用SMP模拟器时），那么该进程很容易超载。<br>定时器模块中不管理定时器的函数（如timer:tc/3或timer:sleep/1）不调用定时器-服务器进程，因此是无害的。</p>
+<h3 id="list-to-atom-1"><a href="#list-to-atom-1" class="headerlink" title="list_to_atom/1"></a>list_to_atom/1</h3><p>原子不会被垃圾回收。一旦原子被创建，它就永远不会被移除。如果达到原子数目的限制(默认为1048576)，模拟器将终止。<br>因此，在一个连续运行的系统中，将任意输入字符串转换成原子可能是危险的。如果只允许某些定义良好的原子作为输入，list_to_existing_atom/1可用于防范拒绝服务攻击。（所有被允许的原子必须是在更早的时候创建的，例如，在一个模块中使用所有原子并加载该模块。）<br>使用list_to_atom/1构造一个按如下方式传递给apply/3的原子是非常昂贵的，在时间要求严格的代码不建议这样做：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply(list_to_atom(&quot;some_prefix&quot;++Var), foo, Args)</span><br></pre></td></tr></table></figure>
+
+<h3 id="length-1"><a href="#length-1" class="headerlink" title="length/1"></a>length/1</h3><p>计算列表长度的时间与列表的长度成正比，而tuple_size/1、byte_size/1和bit_size/1都是在常数时间内执行的。<br>通常，不需要担心length/1的速度，因为它是在c语言中有效实现的。<br>length/1的某些用法可以用匹配代替。例如，以下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo(L) when length(L) &gt;= 3 -&gt;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>可以被重写为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo([_,_,_|_]=L) -&gt;</span><br><span class="line">   ...</span><br></pre></td></tr></table></figure>
+<p>一个细微的区别是，如果L是一个不合适的列表，那么length(L)将失败，而第二个代码片段中的模式接受一个不适合的列表。</p>
+<h3 id="setelement-3"><a href="#setelement-3" class="headerlink" title="setelement/3"></a>setelement/3</h3><p>setelement/3复制它修改的元组。因此，使用setelement/3在循环中更新一个元组，每次都会创建一个新的元组副本。<br>复制元组的规则有一个例外。如果编译器能够清楚地看到，破坏性地更新元组会得到与复制元组相同的结果，那么对setelement/3的调用将被一个特殊的破坏性setelement指令替换。在下面的代码序列中，第一个setelement/3调用复制元组并修改第9个元素：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">multiple_setelement(T0) -&gt;</span><br><span class="line">    T1 = setelement(9, T0, bar),</span><br><span class="line">    T2 = setelement(7, T1, foobar),</span><br><span class="line">    setelement(5, T2, new_value).</span><br></pre></td></tr></table></figure>
+<p>下面的两个setelement/3调用在适当的敌方修改元组。<br>要应用优化，必须满足以下所有条件:</p>
+<ul>
+<li>索引必须是整数，而不是变量或表达式。</li>
+<li>指标必须按降序排列。</li>
+<li>在调用seletement/3之间必须没有对另一个函数的调用。<br>如果代码不能像multiple_setelement/1示例那样结构化，那么修改大元组中的多个元素的最佳方法是将元组转换为列表，修改列表，然后将其转换为元组。</li>
+</ul>
+<h3 id="size-1"><a href="#size-1" class="headerlink" title="size/1"></a>size/1</h3><p>size/1返回元组和二进制文件的大小。<br>使用BIFs tuple_size/1和byte_size/1为编译器和运行时系统提供了更多的优化机会。另一个优点是BIFs为透析器提供了更多的类型信息。</p>
+<h3 id="split-binary-2"><a href="#split-binary-2" class="headerlink" title="split_binary/2"></a>split_binary/2</h3><p>使用匹配而不是调用split_binary/2函数来分割二进制通常更有效。此外，混合使用位语法匹配和split_binary/2可以防止一些位语法匹配的优化。<br>Do</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;&lt;Bin1:Num/binary,Bin2/binary&gt;&gt; = Bin,</span><br></pre></td></tr></table></figure>
+<p>Do Not</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;Bin1,Bin2&#125; = split_binary(Bin, Num)</span><br></pre></td></tr></table></figure>
+
+<h2 id="构造和匹配二进制文件"><a href="#构造和匹配二进制文件" class="headerlink" title="构造和匹配二进制文件"></a>构造和匹配二进制文件</h2><p>可以通过以下方式有效地构建二进制文件：<br>Do</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">my_list_to_binary(List) -&gt;</span><br><span class="line">    my_list_to_binary(List, &lt;&lt;&gt;&gt;).</span><br><span class="line"></span><br><span class="line">my_list_to_binary([H|T], Acc) -&gt;</span><br><span class="line">    my_list_to_binary(T, &lt;&lt;Acc/binary,H&gt;&gt;);</span><br><span class="line">my_list_to_binary([], Acc) -&gt;</span><br><span class="line">    Acc.</span><br></pre></td></tr></table></figure>
+<p>二进制文件可以这样有效地匹配</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">my_binary_to_list(&lt;&lt;H,T/binary&gt;&gt;) -&gt;</span><br><span class="line">    [H|my_binary_to_list(T)];</span><br><span class="line">my_binary_to_list(&lt;&lt;&gt;&gt;) -&gt; [].</span><br></pre></td></tr></table></figure>
+
+<h3 id="如何实现二进制"><a href="#如何实现二进制" class="headerlink" title="如何实现二进制"></a>如何实现二进制</h3><p>在内部，二进制文件和位字符串以相同的方式实现。在本节中，它们被称为二进制文件，因为它们在仿真器源代码中就是这样被调用的。<br>内部提供四种类型的二进制对象：</p>
+<ul>
+<li>其中两个是二进制数据容器，称为：</li>
+<li><ul>
+<li>Refc二进制文件（参考计数二进制文件的缩写）Refc binaries (short for reference-conunted binaries)</li>
+</ul>
+</li>
+<li><ul>
+<li>堆二进制文件 Heap binaries</li>
+</ul>
+</li>
+<li>两个仅仅是引用二进制文件的一部分，称为：</li>
+<li><ul>
+<li>sub binaries</li>
+</ul>
+</li>
+<li><ul>
+<li>match contexts</li>
+</ul>
+</li>
+</ul>
+<h4 id="Refc-Binaries"><a href="#Refc-Binaries" class="headerlink" title="Refc Binaries"></a>Refc Binaries</h4><p>Refc二进制文件由两部分组成：</p>
+<ul>
+<li>存储在进程堆中的对象，称为ProcBin。</li>
+<li>二进制对象本身，存储在所有进程堆之外。<br>二进制对象可以由任意数量进程的任意数据procbin引用。对象包含一个引用计数器，用于跟踪引用的数量，以便在最后一个引用消失时将其删除。<br>进程中所有ProcBin对象都是链表的一部分，因此垃圾收集器可以跟踪它们，并在ProcBin消失时，递减二进制中的引用计数器。</li>
+</ul>
+<h4 id="Heap-Binaries"><a href="#Heap-Binaries" class="headerlink" title="Heap Binaries"></a>Heap Binaries</h4><p>堆二进制文件是小型二进制文件，最多64个字节，直接存储在进程堆上。当进程被垃圾收集时，以及它们作为消息发送时，都会复制它们。它们不需要垃圾收集器进行任何特殊处理。</p>
+<h4 id="Sub-Binaries"><a href="#Sub-Binaries" class="headerlink" title="Sub Binaries"></a>Sub Binaries</h4><p>引用对象的子二进制文件和匹配上下文可以引用refc二进制文件或堆二进制文件的一部分。<br>subbinary由split_binary/2创建，当二进制以二进制模式匹配时创建。子二进制是指向另一个二进制的一部分的引用（refc或堆二进制，但从不指向另一个子二进制）。因此，匹配二进制数据相对便宜，因为实际的二进制数据不会被复制。</p>
+<h4 id="Match-Context"><a href="#Match-Context" class="headerlink" title="Match Context"></a>Match Context</h4><p>匹配上下文类似与子二进制，但针对二进制匹配进行了优化。例如，它直接指向二进制数据的指针。对于二进制文件之外匹配的每个字段，匹配上下文中的位置都是递增的。<br>编译器试图避免生成创建子二进制的代码，但不久就会创建一个新的匹配上下文并丢弃二进制。不创建子二进制，而是保留匹配上下文。<br>编译器只有在知道不共享匹配上下文的情况下才能进行这种优化。如果它是共享的，Erlang的功能属性（也成为引用透明性）就会中断。</p>
+<h3 id="构造Binaries"><a href="#构造Binaries" class="headerlink" title="构造Binaries"></a>构造Binaries</h3><p>附加到二进制或位串是特别优化的运行时系统：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;&lt;Binary/binary, ...&gt;&gt;</span><br><span class="line">&lt;&lt;Binary/bitstring, ...&gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>当运行时系统处理优化（而不是编译器）时，很少有优化不起作用的情况。<br>工作原理：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Bin0 = &lt;&lt;0&gt;&gt;,                    %% 1</span><br><span class="line">Bin1 = &lt;&lt;Bin0/binary,1,2,3&gt;&gt;,    %% 2</span><br><span class="line">Bin2 = &lt;&lt;Bin1/binary,4,5,6&gt;&gt;,    %% 3</span><br><span class="line">Bin3 = &lt;&lt;Bin2/binary,7,8,9&gt;&gt;,    %% 4</span><br><span class="line">Bin4 = &lt;&lt;Bin1/binary,17&gt;&gt;,       %% 5 !!!</span><br><span class="line">&#123;Bin4,Bin3&#125;                      %% 6</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一行将堆二进制分配给Bin0变量。</li>
+<li>第二行是追加操作。由于在追加操作中没有涉及到Bin0，所以创建了一个新的refc二进制文件，并将Bin0的内容复制到其中。refc二进制文件的ProcBin部分将其大小存储在二进制文件中的数据的大小，而二进制对象则分配了额外的空间。二进制对象的大小是Bin1或256的两倍（比较大的为准）这里是256。</li>
+<li>第三行在追加操作中使用了Bin1，它在末尾有252个字节的未使用的存储，因此有3个新字节存储在哪里。</li>
+<li>第四行，和第三行一样。还剩余249个字节，所以再存储3个字节没有问题。</li>
+<li>第五行，结果不是追加到Bin3中的前一个结果，而是追加到Bin1.预计Bin4将被赋值&lt;&lt;0, 1, 2, 3, 17&gt;&gt;。我们也希望Bin3能够保持它的值（&lt;&lt;0,1,2,3,4,5,6,7,8,9&gt;&gt;）。显然，运行时系统不能将字节17写入二进制文件，因为会将Bin3的值更改为&lt;&lt;0,1,2,3,4,17,6,7,8,9&gt;&gt;。<br>运行时系统看到Bin1是前一个追加操作（而不是最新追加操作）的结果，所以它将Bin1的内容复制到一个新的二进制文件中，并保留额外的存储空间，等等。</li>
+</ul>
+<h4 id="迫使复制的情况-Circumstances-That-Force-Copying"><a href="#迫使复制的情况-Circumstances-That-Force-Copying" class="headerlink" title="迫使复制的情况 (Circumstances That Force Copying)"></a>迫使复制的情况 (Circumstances That Force Copying)</h4><p>二进制附加操作的优化要求二进制只有一个ProcBin和一个对ProcBin的引用。原因是二进制对象可以在追加操作期间移动（重新分配），当这种情况发生时，ProcBin中的指针必须更新。如果由多个ProcBin指向二进制对象，就不可能找到并更新所有这些对象。<br>因此，对二进制文件的某些操作将对其进行标记，以便将来的任何附加操作都将被迫复制二进制文件。在大多数情况下，二进制对象将同时回收，以收回分配给增长的额外空间。<br>当附加到一个二进制文件如下，只有从最新的附加操作返回的二进制文件将支持进一步的廉价附加操作：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bin = &lt;&lt;Bin0,...&gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>在本节开头的代码片段中，向Bin添加内容很廉价。而向Bin0添加内容将强制创建一个新的二进制文件并复制Bin0的内容。<br>如果将二进制文件作为消息发送到进程或端口，二进制文件将被缩小，任何进一步的追加操作都将把二进制数据复制到新的二进制文件中。例如，在下面的代码片段中，Bin1将被复制到第三行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bin1 = &lt;&lt;Bin0,...&gt;&gt;,</span><br><span class="line">PortOrPid ! Bin1,</span><br><span class="line">Bin = &lt;&lt;Bin1,...&gt;&gt;  %% Bin1 will be COPIED</span><br></pre></td></tr></table></figure>
+<p>如果在Ets表中插入一个二进制文件，使用erlang:port_command/2将其发送到端口，或者在NIF中将其传递给enif_inspect_binary，也会发生相同的情况。<br>匹配一个二进制也会导致它缩小，下一个追加操作将复制二进制数据:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bin1 = &lt;&lt;Bin0,...&gt;&gt;,</span><br><span class="line">&lt;&lt;X,Y,Z,T/binary&gt;&gt; = Bin1,</span><br><span class="line">Bin = &lt;&lt;Bin1,...&gt;&gt;  %% Bin1 will be COPIED</span><br></pre></td></tr></table></figure>
+<p>原因是match上下文包含一个指向二进制数据的指针。<br>如果一个进程简单地保留二进制文件（无论是在“循环数据”中还是在进程字典中），垃圾收集器最终会缩小二进制文件。如果只保留一个这样的二进制文件，它就不会缩小。如果进程后来附加到已缩小的二进制文件中，则将重新分配二进制对象，以便为要附加的数据腾出位置。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/12/02/erlang_myths/" data-id="ck3nv4tzj0002jb022uotbmo0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/26/erlang_compile/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Erlang Compile</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/12/02/erlang_myths/">Erlang性能指南</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/26/erlang_compile/">Erlang Compile</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/24/erlang_http/">Erlang HTTP</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/11/erlang_logger/">Erlang Logger</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/11/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
