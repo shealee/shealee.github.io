@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Erlang中的XML | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文档主要讲述Erlang中的XML相关的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang中的XML">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;02&#x2F;04&#x2F;erlang_xml&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文档主要讲述Erlang中的XML相关的。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2020-02-04T08:24:32.303Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang_xml" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/04/erlang_xml/" class="article-date">
+  <time datetime="2020-02-04T08:24:32.303Z" itemprop="datePublished">2020-02-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Erlang中的XML
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文档主要讲述Erlang中的XML相关的。</p>
+<a id="more"></a>
+
+<h2 id="Erlang-XML"><a href="#Erlang-XML" class="headerlink" title="Erlang XML"></a>Erlang XML</h2><h3 id="xmerl-scan"><a href="#xmerl-scan" class="headerlink" title="xmerl_scan"></a>xmerl_scan</h3><p>This module is the interface to the XML parser, it handles XML 1.0.<br>这个模块是XML解析器的接口，它处理XML 1.0。</p>
+<p>XML解析器是通过xmerl_scan:string/[1,2]或xmerl_scan:file/[1,2]来激活的。它返回xmerl.hrl中定义的类型的记录。参见定制函数教程。</p>
+<h4 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h4><p>1.document() = xmlElement() | xmlDocument()<br>由xmerl_scan:string/[1,2]和xmerl_scan:file/[1,2]返回的文档。返回记录的类型取决于传递给函数的文档选项的值。<br>2.global_state()<br>扫描器的全局状态，由#xmerl_scanner{}记录表示。<br>3.option_list()<br>选项允许自定义扫描程序的行为。参见定制函数教程。<br>可能的选项是:</p>
+<ul>
+<li>{acc_fun, Fun}<br>调用函数来积累实体内容。</li>
+<li>{continuation_fun, Fun} | {continuation_fun, Fun, ContinuationState}<br>回调函数，以决定如果扫描仪在文档完成之前运行到EOF时该做什么。</li>
+<li>{event_fun, Fun} | {event_fun, Fun, EventState}<br>回调函数来处理扫描事件。</li>
+<li>{fetch_fun, Fun} | {fetch_fun, Fun, FetchState}<br>调用函数获取外部资源。</li>
+<li>{hook_fun, Fun} | {hook_fun, Fun, HookState}<br>调用回调函数来处理标识后的文档实体。</li>
+<li>{close_fun, Fun}<br>当文档被完全解析时调用。</li>
+<li>{rules, ReadFun, WriteFun, RulesState} | {rules, Rules}<br>处理解析时扫描程序信息的存储。</li>
+<li>{user_state, UserState}<br>可从所有自定义函数访问的全局状态变量</li>
+<li>{fetch_path, PathList}<br>路径列表是获取文件时要搜索的目录列表。如果有问题的文件不在fetch_path中，则URI将用作文件名。</li>
+<li>{space, Flag}<br>‘preserve’(默认值)用于保留空格，’normalize’用于累积连续的空格并将其替换为一个空格。</li>
+<li>{line, Line}<br>指定扫描包含XML片段的文档的起始行。</li>
+<li>{namespace_conformant, Flag}<br>控制是否作为与名称空间一致的XML解析器，“false”(默认)为“true”。</li>
+<li>{validation, Flag}<br>控制是否作为验证XML解析器处理:’off’(默认)不进行验证，或通过dtd验证’dtd’或通过XML schema验证’schema’。如果使用“false”等于“off”和“true”等于“dtd”，则“false”和“true”选项是过时的(即它们可能在将来的版本中被删除)。</li>
+<li>{schemaLocation, [{Namespace,Link}|…]}<br>显式地告诉要使用哪个XML模式文档来验证XML文档。与{validation,schema}选项一起使用。</li>
+<li>{quiet, Flag}<br>如果xmerl应该安静地运行，不向标准输出输出任何信息，则将其设置为“true”(默认为“false”)。</li>
+<li>{doctype_DTD, DTD}<br>允许指定在XML文档中不可用的DTD名称。此选项仅与{validation，’dtd’选项一起有效。</li>
+<li>{xmlbase, Dir}<br>XML基础目录。如果使用string/1，默认是当前目录。如果使用file/1，默认是给定文件的目录。</li>
+<li>{encoding, Enc}<br>设置使用的默认字符集(默认UTF-8)。只有在XML声明没有显式给出时才使用这个字符集。</li>
+<li>{document, Flag}<br>如果xmerl应该以xmlDocument记录的形式返回完整的XML文档，则将其设置为’true’(默认为’false’)。</li>
+<li>{comments, Flag}<br>如果xmerl应该跳过注释，则将其设置为“false”，否则将返回xmlComment记录(默认为“true”)。</li>
+<li>{default_attrs, Flag}<br>如果xmerl应该为元素添加定义了默认值的缺失属性(默认值为“false”)，则将其设置为“true”。</li>
+</ul>
+<p>4.xmlDocument() = #xmlDocument{}<br>5.xmlElement() = #xmlElement{}</p>
+<h4 id="导出函数"><a href="#导出函数" class="headerlink" title="导出函数"></a>导出函数</h4><p>1.accumulate_whitespace(T::string(), S::global_state(), X3::atom(), Acc::string()) -&gt; {Acc, T1, S1}<br>函数用于累积和规格化空白。<br>2.cont_state(S::global_state()) -&gt; global_state()<br>Equivalent to cont_state(ContinuationState, S).<br>3.cont_state(X::ContinuationState, S::global_state()) -&gt; global_state()<br>用于控制ContinuationState，将在延续函数中使用，并在解析器遇到字节流结束时调用。参见自定义函数教程。<br>4.event_state(S::global_state()) -&gt; global_state()<br>Equivalent to event_state(EventState, S).<br>5.event_state(X::EventState, S::global_state()) -&gt; global_state()<br>6.fetch_state(S::global_state()) -&gt; global_state()<br>7.fetch_state(X::FetchState, S::global_state()) -&gt; global_state()<br>8.file(Filename::string()) -&gt; {xmlElement(), Rest}<br>9.file(Filename::string(), Options::option_list()) -&gt; {document(), Rest}<br>10.hook_state(S::global_state()) -&gt; global_state()<br>11.hook_state(X::HookState, S::global_state()) -&gt; global_state()<br>12.rules_state(S::global_state()) -&gt; global_state()<br>13.rules_state(X::RulesState, S::global_state()) -&gt; global_state()<br>14.string(Text::list()) -&gt; {xmlElement(), Rest}<br>15.string(Text::list(), Options::option_list()) -&gt; {document(), Rest}<br>16.user_state(S::global_state()) -&gt; global_state()<br>17.user_state(X::UserState, S::global_state()) -&gt; global_state()</p>
+<h3 id="定制函数"><a href="#定制函数" class="headerlink" title="定制函数"></a>定制函数</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>XML处理器(processor)提供了许多自定义挂钩。这些挂钩被定义为函数对象，可以由调用者提供。<br>可以使用以下定制功能。如果它们也可以访问自己的状态变量，则该状态的访问函数在括号中标识:</p>
+<ul>
+<li>event function ( xmerl_scan:event_state/[1,2] ) (事件函数)</li>
+<li>hook function ( xmerl_scan:hook_state/[1,2] ) (钩子函数)</li>
+<li>fetch function ( xmerl_scan:fetch_state/[1,2] ) (取来函数)</li>
+<li>continuation function ( xmerl_scan:cont_state/[1,2] ) (附加函数)</li>
+<li>rules function ( xmerl_scan:rules_state/[1,2] ) (规则函数)</li>
+<li>accumulator function (累加器函数)</li>
+<li>close function (关闭函数)<br>对于上述所有状态访问函数，带有一个参数的函数(如event_state(GlobalState))将读取状态变量，而带有两个参数的函数(如:event_state(NewEventState, GlobalState))将对其进行修改。<br>对于每个函数，描述从在Option_list中指定函数的语法开始。一般的形式是{Tag, Fun}或{Tag, Fun, LocalState}。第二个表单可以用来初始化状态变量。</li>
+</ul>
+<h4 id="用户状态-User-State"><a href="#用户状态-User-State" class="headerlink" title="用户状态 (User State)"></a>用户状态 (User State)</h4><p>所有自定义函数都可以自由访问“用户状态”变量。当然，必须注意协调使用这种状态。建议函数使用它们自己的状态变量，因为它们实际上没有任何东西可以贡献给“全局”用户状态。另一个选项(在例如xmerl_event .erl中使用)用于自定义函数来共享一个本地状态(在xmerl_eventp中)。erl, continuation函数和fetch函数都接受cont_state。)<br>访问用户状态的功能:</p>
+<ul>
+<li>xmerl_scan:user_state(GlobalState)</li>
+<li>xmerl_scan:user_state(UserState, GlobalState)</li>
+</ul>
+<h4 id="事件函数-Event-State"><a href="#事件函数-Event-State" class="headerlink" title="事件函数 (Event State)"></a>事件函数 (Event State)</h4><p>{event_fun, fun()} | {event_fun, fun(), EventState}<br>事件函数在已解析实体的开头和结尾调用。它的格式和语义如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fun(Event, GlobalState) -&gt;</span><br><span class="line">   EventState = xmerl_scan:event_state(GlobalState),</span><br><span class="line">   EventState2 = foo(Event, EventState),</span><br><span class="line">   GlobalState2 = xmerl_scan:event_state(EventState2, GlobalState)</span><br><span class="line">end.</span><br></pre></td></tr></table></figure>
+
+<h4 id="钩子函数-Hook-State"><a href="#钩子函数-Hook-State" class="headerlink" title="钩子函数 (Hook State)"></a>钩子函数 (Hook State)</h4><p>{fetch_fun, fun()} | {fetch_fun, fun(), FetchState}<br>当处理器解析完一个完整的实体时，就会调用hook函数。格式和语义:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">fun(Entity, GlobalState) -&gt;</span><br><span class="line">    HookState = xmerl_scan:hook_state(GlobalState),</span><br><span class="line">    &#123;TransformedEntity, HookState2&#125; = foo(Entity, HookState),</span><br><span class="line">    GlobalState2 = xmerl_scan:hook_state(HookState2, GlobalState),</span><br><span class="line">    &#123;TransformedEntity, GlobalState2&#125;</span><br><span class="line"> end.</span><br></pre></td></tr></table></figure>
+<p>事件函数、钩子函数与累加器函数的关系如下:<br>1.首先使用已解析实体的“结束”事件调用事件函数。<br>2.调用钩子函数，可能需要重新格式化实体。<br>3.调用acc函数是为了(可选地)将重新格式化的实体添加到其父元素的内容中。</p>
+<h4 id="取来函数-Fetch-Function"><a href="#取来函数-Fetch-Function" class="headerlink" title="取来函数 (Fetch Function)"></a>取来函数 (Fetch Function)</h4><p>{fetch_fun, fun()} | {fetch_fun, fun(), FetchState}<br>调用fetch函数是为了获取外部资源(例如DTD)。<br>fetch函数可以响应三个不同的返回值:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Result ::=</span><br><span class="line">       &#123;ok, &#123;file, Filename&#125;, NewGlobalState&#125; |</span><br><span class="line">       &#123;ok, &#123;string, String&#125;, NewGlobalState&#125; |</span><br><span class="line">       &#123;ok, not_fetched, NewGlobalState&#125;</span><br></pre></td></tr></table></figure>
+<p>格式和语义</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fun(URI, GlobalState) -&gt;</span><br><span class="line">    FetchState = xmerl_scan:fetch_state(GlobalState),</span><br><span class="line">    Result = foo(URI, FetchState).  % Result being one of the above</span><br><span class="line"> end.</span><br></pre></td></tr></table></figure>
+
+<h4 id="附加函数-Continuation-Function"><a href="#附加函数-Continuation-Function" class="headerlink" title="附加函数 (Continuation Function)"></a>附加函数 (Continuation Function)</h4><p>{continuation_fun, fun()} | {continuation_fun, fun(), ContinuationState}<br>当解析器遇到字节流结束时，将调用continuation函数。格式和语义:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">fun(Continue, Exception, GlobalState) -&gt;</span><br><span class="line">    ContState = xmerl_scan:cont_state(GlobalState),</span><br><span class="line">    &#123;Result, ContState2&#125; = get_more_bytes(ContState),</span><br><span class="line">    case Result of</span><br><span class="line">       [] -&gt;</span><br><span class="line">          GlobalState2 = xmerl_scan:cont_state(ContState2, GlobalState),</span><br><span class="line">          Exception(GlobalState2);</span><br><span class="line">       MoreBytes -&gt;</span><br><span class="line">          &#123;MoreBytes2, Rest&#125; = end_on_whitespace_char(MoreBytes),</span><br><span class="line">          ContState3 = update_cont_state(Rest, ContState2),</span><br><span class="line">          GlobalState3 = xmerl_scan:cont_state(ContState3, GlobalState),</span><br><span class="line">          Continue(MoreBytes2, GlobalState3)</span><br><span class="line">    end</span><br><span class="line"> end.</span><br></pre></td></tr></table></figure>
+
+<h4 id="规格函数-Rules-Function"><a href="#规格函数-Rules-Function" class="headerlink" title="规格函数 (Rules Function)"></a>规格函数 (Rules Function)</h4><p>{rules, ReadFun : fun(), WriteFun : fun(), RulesState} | {rules, Table : ets()}<br>规则函数负责在规则数据库中存储扫描程序信息。用户提供的规则函数可以选择将信息存储在mnesia中，或者可能存储在user_state(RulesState)中。<br>存在以下模式:</p>
+<ul>
+<li>如果用户没有指定一个选项，扫描器将创建一个ets表，并使用内置的函数对其读写数据。扫描完成后，ets表将被删除。</li>
+<li>如果用户通过{rules, table}选项指定一个ets表，扫描程序将使用这个表。扫描完成后，它不会删除表。</li>
+<li>如果用户指定读写函数，扫描器将使用它们。<br>读写函数的格式如下:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WriteFun(Context, Name, Definition, ScannerState) -&gt; NewScannerState.</span><br><span class="line">ReadFun(Context, Name, ScannerState) -&gt; Definition | undefined.</span><br></pre></td></tr></table></figure>
+以下是扫描仪当前正在写入的数据对象的摘要:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">notation	NotationName	&#123;system, SL&#125; | &#123;public, PIDL, SL&#125;</span><br><span class="line">elem_def	ElementName	#xmlElement&#123;content = ContentSpec&#125;</span><br><span class="line">parameter_entity	PEName	PEDef</span><br><span class="line">entity	EntityName	EntityDef</span><br></pre></td></tr></table></figure>
+where<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ContentSpec ::= empty | any | ElemContent</span><br><span class="line">ElemContent ::= &#123;Mode, Elems&#125;</span><br><span class="line">Mode        ::= seq | choice</span><br><span class="line">Elems       ::= [Elem]</span><br><span class="line">Elem        ::= &apos;#PCDATA&apos; | Name | ElemContent | &#123;Occurrence, Elems&#125;</span><br><span class="line">Occurrence  ::= &apos;*&apos; | &apos;?&apos; | &apos;+&apos;</span><br></pre></td></tr></table></figure>
+NOTE: When <Elem> is not wrapped with <Occurrence>, (Occurrence = once) is implied.</li>
+</ul>
+<h4 id="累加函数-Accumulator-Function"><a href="#累加函数-Accumulator-Function" class="headerlink" title="累加函数 (Accumulator Function)"></a>累加函数 (Accumulator Function)</h4><p>{acc_fun, fun()}<br>调用accumulator函数来累积实体的内容。在解析非常大的文件时，可能不希望这样做。在这种情况下，可以提供一个不会累积的acc函数。<br>请注意，甚至可以在积累之前修改已解析的实体，但这必须谨慎进行。xmerl_scan执行用于名称空间管理的元素的后处理。因此，元素必须保持其原始结构才能工作。<br>acc函数的格式和语义如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">%% default accumulating acc fun</span><br><span class="line">fun(ParsedEntity, Acc, GlobalState) -&gt;</span><br><span class="line">   &#123;[ParsedEntity|Acc], GlobalState&#125;.</span><br><span class="line">%% non-accumulating acc fun</span><br><span class="line">fun(ParsedEntity, Acc, GlobalState) -&gt;</span><br><span class="line">   &#123;Acc, GlobalState&#125;.</span><br></pre></td></tr></table></figure>
+
+<h4 id="关闭函数-Close-Function"><a href="#关闭函数-Close-Function" class="headerlink" title="关闭函数 (Close Function)"></a>关闭函数 (Close Function)</h4><p>当一个文档(主文档或外部DTD)被完全解析时，将调用close函数。当使用xmerl_scan:file/[1,2]启动xmerl_scan时，文件将被完整读取，并在解析开始之前立即关闭，因此当调用close函数时，它实际上不需要关闭文件。在这种情况下，close函数是修改状态变量的好地方。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fun(GlobalState) -&gt;</span><br><span class="line">   GlobalState1 = ....  % state variables may be altered</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/04/erlang_xml/" data-id="ck67mannr0006qj02cis34cu1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/12/24/database_ddl/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">数据定义</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/04/erlang_xml/">Erlang中的XML</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/database_ddl/">数据定义</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/erlang_characteristics/">Erlang语言特点</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/erlang_myths/">Erlang性能指南</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/linux_cmd1/">Linux命令1</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

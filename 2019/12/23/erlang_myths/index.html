@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Erlang性能指南 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文档主要关注Erlang性能提升方面，包括揭示普遍人觉得的谬误、常见的警告。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Erlang性能指南">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;23&#x2F;erlang_myths&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文档主要关注Erlang性能提升方面，包括揭示普遍人觉得的谬误、常见的警告。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-12-23T14:02:20.636Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-erlang_myths" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/12/23/erlang_myths/" class="article-date">
+  <time datetime="2019-12-23T14:02:20.636Z" itemprop="datePublished">2019-12-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Erlang性能指南
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文档主要关注Erlang性能提升方面，包括揭示普遍人觉得的谬误、常见的警告。</p>
+<a id="more"></a>
+
+<h2 id="谬误"><a href="#谬误" class="headerlink" title="谬误"></a>谬误</h2><h3 id="谬误1-Fun是很慢的"><a href="#谬误1-Fun是很慢的" class="headerlink" title="谬误1 Fun是很慢的"></a>谬误1 Fun是很慢的</h3><p>Funs曾经非常慢，比apply/3慢。最初，funs只是compiler trickery，普通的元组，apply/3和大量的ingenuity实现的。<br>但这是历史。Funs在R6B中有自己的数据类型，在R7B中进一步优化。现在，funs的调用成本大致在本地函数调用和apply/3之间。</p>
+<h3 id="谬误2-列表推导很慢"><a href="#谬误2-列表推导很慢" class="headerlink" title="谬误2 列表推导很慢"></a>谬误2 列表推导很慢</h3><p>列表推导过去是使用funs去实现的，在过去funs确实很慢。<br>现在，编译器将列表推导重写为普通的递归函数。使用尾部递归函数并在末尾执行反向操作仍然会更快。</p>
+<h3 id="谬误3-列表减法（”–”操作符）很慢"><a href="#谬误3-列表减法（”–”操作符）很慢" class="headerlink" title="谬误3 列表减法（”–”操作符）很慢"></a>谬误3 列表减法（”–”操作符）很慢</h3><p>列表减法过去的运行时复杂度与操作数长度的乘积成正比，所以当两个列表都很长时，它的运行速度非常慢。<br>OTP22的运行时复杂度是“nlogn”，即使两个列表都很长，操作也会很快完成。事实上，在使用ordset:subtract/2将两个列表转换为有序集之前，它比通常使用的方法更快，占用的内存更少。</p>
+<h3 id="谬误4-尾部递归函数比递归函数快得多"><a href="#谬误4-尾部递归函数比递归函数快得多" class="headerlink" title="谬误4 尾部递归函数比递归函数快得多"></a>谬误4 尾部递归函数比递归函数快得多</h3><p>使用尾部递归函数以相反的方式构建列表，然后调用lists:reverse/1比主体递归函数以正确比尾部递归使用更多的内存。<br>在R12B之前，这在某种程度上是正确的。在R7B之前更是如此。今天，情况就不一样了。主体递归函数通常使用相同的内存。通常不可能预测尾部递归版本和主体递归版本哪个更快。因此，使用使代码更简洁的版本。</p>
+<h3 id="谬误5-操作符”-”总是不好的。"><a href="#谬误5-操作符”-”总是不好的。" class="headerlink" title="谬误5 操作符”++”总是不好的。"></a>谬误5 操作符”++”总是不好的。</h3><p>不推荐的写法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">naive_reverse([H | T]) -&gt;</span><br><span class="line">    naive_reverse(T) ++ [H];</span><br><span class="line">naive_reverse([]) -&gt;</span><br><span class="line">    [].</span><br></pre></td></tr></table></figure>
+<p>当++操作符复制它的左操作数时，结果被重复复制，导致二次复杂度。<br>但是使用++如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">naive_but_ok_reverse([H | T], Acc) -&gt;</span><br><span class="line">    naive_but_ok_reverse(T, [H] ++ Acc);</span><br><span class="line">naive_but_ok_reverse([], Acc) -&gt;</span><br><span class="line">    Acc.</span><br></pre></td></tr></table></figure>
+<p>每个元素只复制一次。不断增长的结果Acc是++操作符的正确操作数，它不会被复制。<br>有经验的程序员会这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vanilla_reverse([H | T], Acc) -&gt;</span><br><span class="line">    vanilla_reverse(T, [H | Acc]);</span><br><span class="line">vanilla_reverse([], Acc) -&gt;</span><br><span class="line">    Acc.</span><br></pre></td></tr></table></figure>
+<p>这样做的效率略高一些，因为在这里构建list元素并不是为了直接复制它。（或者，如果编译器不自动将[H] ++ Acc重写为[H | Acc]，效率会更高。）</p>
+<h3 id="谬误6-字符串都是很缓慢的"><a href="#谬误6-字符串都是很缓慢的" class="headerlink" title="谬误6 字符串都是很缓慢的"></a>谬误6 字符串都是很缓慢的</h3><p>如果处理不当，字符串处理可能会很缓慢。在Erlang中，您需要更多的考虑如何使用字符串，并选择适当的表达形式。如果使用正则表达式，请使用STDLIB中的re模块，而不是过时的regexp模块。</p>
+<h3 id="谬误7-修复一个Dets文件非常慢"><a href="#谬误7-修复一个Dets文件非常慢" class="headerlink" title="谬误7 修复一个Dets文件非常慢"></a>谬误7 修复一个Dets文件非常慢</h3><p>修复时间仍然与文件中的记录数量成比例，但是Dets修复在过去要慢得多。Dets被大量重写和改进。</p>
+<h3 id="谬误8-BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）"><a href="#谬误8-BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）" class="headerlink" title="谬误8 BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）"></a>谬误8 BEAM是一个基于堆栈的字节码虚拟机（因此速度很慢）</h3><p>BEAM是一个基于寄存器的虚拟机。它有1024个虚拟寄存器，用于保存临时值和在调用函数时传递参数。需要在函数调用后存活的变量被保存在堆栈中。<br>BEAM是一个线程代码解析器。每条指令都直接指向可执行的c代码，使得指令调度非常快。</p>
+<h3 id="谬误9-当不使用变量时，使用-来加速程序"><a href="#谬误9-当不使用变量时，使用-来加速程序" class="headerlink" title="谬误9 当不使用变量时，使用_来加速程序"></a>谬误9 当不使用变量时，使用_来加速程序</h3><p>这曾经是真的，但是从R6B波束编译器可以看到一个变量没有被使用。<br>类似地，在源代码级别上的细微转换（例如将case语句转换为函数顶层的子句）很少会对生成的代码产生任何影响。</p>
+<h3 id="NIF总是会加速你的程序"><a href="#NIF总是会加速你的程序" class="headerlink" title="NIF总是会加速你的程序"></a>NIF总是会加速你的程序</h3><p>将Erlang代码重写为NIF以使其更快应该被视为最后的手段。它只能保证是危险的，但不能保证加速程序。<br>在每个NIF调用中做太多的工作将降低VM的响应能力。做的工作太少可能意味着NIF中更快处理的增益被调用NIF和检查参数的开销所抵消。<br>在编写NIF之前，一定要阅读关于长时间运行的NIFs的内容。</p>
+<h2 id="警告"><a href="#警告" class="headerlink" title="警告"></a>警告</h2><p>本节列出一些需要注意的模块和BIFs，不仅仅是从性能的角度来看。</p>
+<h3 id="Timer-Module"><a href="#Timer-Module" class="headerlink" title="Timer Module"></a>Timer Module</h3><p>使用erlang:send_after/3和erlang:start_timer/3创建计时器比使用STDLIB中的计时器模块提供的计时器要高效得多。定时器模块使用一个单独的进程来管理计时器。如果许多进程频繁地创建和取消计时器（特别是在使用SMP模拟器时），那么该进程很容易超载。<br>定时器模块中不管理定时器的函数（如timer:tc/3或timer:sleep/1）不调用定时器-服务器进程，因此是无害的。</p>
+<h3 id="list-to-atom-1"><a href="#list-to-atom-1" class="headerlink" title="list_to_atom/1"></a>list_to_atom/1</h3><p>原子不会被垃圾回收。一旦原子被创建，它就永远不会被移除。如果达到原子数目的限制(默认为1048576)，模拟器将终止。<br>因此，在一个连续运行的系统中，将任意输入字符串转换成原子可能是危险的。如果只允许某些定义良好的原子作为输入，list_to_existing_atom/1可用于防范拒绝服务攻击。（所有被允许的原子必须是在更早的时候创建的，例如，在一个模块中使用所有原子并加载该模块。）<br>使用list_to_atom/1构造一个按如下方式传递给apply/3的原子是非常昂贵的，在时间要求严格的代码不建议这样做：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply(list_to_atom(&quot;some_prefix&quot;++Var), foo, Args)</span><br></pre></td></tr></table></figure>
+
+<h3 id="length-1"><a href="#length-1" class="headerlink" title="length/1"></a>length/1</h3><p>计算列表长度的时间与列表的长度成正比，而tuple_size/1、byte_size/1和bit_size/1都是在常数时间内执行的。<br>通常，不需要担心length/1的速度，因为它是在c语言中有效实现的。<br>length/1的某些用法可以用匹配代替。例如，以下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo(L) when length(L) &gt;= 3 -&gt;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>可以被重写为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo([_,_,_|_]=L) -&gt;</span><br><span class="line">   ...</span><br></pre></td></tr></table></figure>
+<p>一个细微的区别是，如果L是一个不合适的列表，那么length(L)将失败，而第二个代码片段中的模式接受一个不适合的列表。</p>
+<h3 id="setelement-3"><a href="#setelement-3" class="headerlink" title="setelement/3"></a>setelement/3</h3><p>setelement/3复制它修改的元组。因此，使用setelement/3在循环中更新一个元组，每次都会创建一个新的元组副本。<br>复制元组的规则有一个例外。如果编译器能够清楚地看到，破坏性地更新元组会得到与复制元组相同的结果，那么对setelement/3的调用将被一个特殊的破坏性setelement指令替换。在下面的代码序列中，第一个setelement/3调用复制元组并修改第9个元素：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">multiple_setelement(T0) -&gt;</span><br><span class="line">    T1 = setelement(9, T0, bar),</span><br><span class="line">    T2 = setelement(7, T1, foobar),</span><br><span class="line">    setelement(5, T2, new_value).</span><br></pre></td></tr></table></figure>
+<p>下面的两个setelement/3调用在适当的敌方修改元组。<br>要应用优化，必须满足以下所有条件:</p>
+<ul>
+<li>索引必须是整数，而不是变量或表达式。</li>
+<li>指标必须按降序排列。</li>
+<li>在调用seletement/3之间必须没有对另一个函数的调用。<br>如果代码不能像multiple_setelement/1示例那样结构化，那么修改大元组中的多个元素的最佳方法是将元组转换为列表，修改列表，然后将其转换为元组。</li>
+</ul>
+<h3 id="size-1"><a href="#size-1" class="headerlink" title="size/1"></a>size/1</h3><p>size/1返回元组和二进制文件的大小。<br>使用BIFs tuple_size/1和byte_size/1为编译器和运行时系统提供了更多的优化机会。另一个优点是BIFs为透析器提供了更多的类型信息。</p>
+<h3 id="split-binary-2"><a href="#split-binary-2" class="headerlink" title="split_binary/2"></a>split_binary/2</h3><p>使用匹配而不是调用split_binary/2函数来分割二进制通常更有效。此外，混合使用位语法匹配和split_binary/2可以防止一些位语法匹配的优化。<br>Do</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;&lt;Bin1:Num/binary,Bin2/binary&gt;&gt; = Bin,</span><br></pre></td></tr></table></figure>
+<p>Do Not</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;Bin1,Bin2&#125; = split_binary(Bin, Num)</span><br></pre></td></tr></table></figure>
+
+<h2 id="构造和匹配二进制文件"><a href="#构造和匹配二进制文件" class="headerlink" title="构造和匹配二进制文件"></a>构造和匹配二进制文件</h2><p>可以通过以下方式有效地构建二进制文件：<br>Do</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">my_list_to_binary(List) -&gt;</span><br><span class="line">    my_list_to_binary(List, &lt;&lt;&gt;&gt;).</span><br><span class="line"></span><br><span class="line">my_list_to_binary([H|T], Acc) -&gt;</span><br><span class="line">    my_list_to_binary(T, &lt;&lt;Acc/binary,H&gt;&gt;);</span><br><span class="line">my_list_to_binary([], Acc) -&gt;</span><br><span class="line">    Acc.</span><br></pre></td></tr></table></figure>
+<p>二进制文件可以这样有效地匹配</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">my_binary_to_list(&lt;&lt;H,T/binary&gt;&gt;) -&gt;</span><br><span class="line">    [H|my_binary_to_list(T)];</span><br><span class="line">my_binary_to_list(&lt;&lt;&gt;&gt;) -&gt; [].</span><br></pre></td></tr></table></figure>
+
+<h3 id="如何实现二进制"><a href="#如何实现二进制" class="headerlink" title="如何实现二进制"></a>如何实现二进制</h3><p>在内部，二进制文件和位字符串以相同的方式实现。在本节中，它们被称为二进制文件，因为它们在仿真器源代码中就是这样被调用的。<br>内部提供四种类型的二进制对象：</p>
+<ul>
+<li>其中两个是二进制数据容器，称为：</li>
+<li><ul>
+<li>Refc二进制文件（参考计数二进制文件的缩写）Refc binaries (short for reference-conunted binaries)</li>
+</ul>
+</li>
+<li><ul>
+<li>堆二进制文件 Heap binaries</li>
+</ul>
+</li>
+<li>两个仅仅是引用二进制文件的一部分，称为：</li>
+<li><ul>
+<li>sub binaries</li>
+</ul>
+</li>
+<li><ul>
+<li>match contexts</li>
+</ul>
+</li>
+</ul>
+<h4 id="Refc-Binaries"><a href="#Refc-Binaries" class="headerlink" title="Refc Binaries"></a>Refc Binaries</h4><p>Refc二进制文件由两部分组成：</p>
+<ul>
+<li>存储在进程堆中的对象，称为ProcBin。</li>
+<li>二进制对象本身，存储在所有进程堆之外。<br>二进制对象可以由任意数量进程的任意数据procbin引用。对象包含一个引用计数器，用于跟踪引用的数量，以便在最后一个引用消失时将其删除。<br>进程中所有ProcBin对象都是链表的一部分，因此垃圾收集器可以跟踪它们，并在ProcBin消失时，递减二进制中的引用计数器。</li>
+</ul>
+<h4 id="Heap-Binaries"><a href="#Heap-Binaries" class="headerlink" title="Heap Binaries"></a>Heap Binaries</h4><p>堆二进制文件是小型二进制文件，最多64个字节，直接存储在进程堆上。当进程被垃圾收集时，以及它们作为消息发送时，都会复制它们。它们不需要垃圾收集器进行任何特殊处理。</p>
+<h4 id="Sub-Binaries"><a href="#Sub-Binaries" class="headerlink" title="Sub Binaries"></a>Sub Binaries</h4><p>引用对象的子二进制文件和匹配上下文可以引用refc二进制文件或堆二进制文件的一部分。<br>subbinary由split_binary/2创建，当二进制以二进制模式匹配时创建。子二进制是指向另一个二进制的一部分的引用（refc或堆二进制，但从不指向另一个子二进制）。因此，匹配二进制数据相对便宜，因为实际的二进制数据不会被复制。</p>
+<h4 id="Match-Context"><a href="#Match-Context" class="headerlink" title="Match Context"></a>Match Context</h4><p>匹配上下文类似与子二进制，但针对二进制匹配进行了优化。例如，它直接指向二进制数据的指针。对于二进制文件之外匹配的每个字段，匹配上下文中的位置都是递增的。<br>编译器试图避免生成创建子二进制的代码，但不久就会创建一个新的匹配上下文并丢弃二进制。不创建子二进制，而是保留匹配上下文。<br>编译器只有在知道不共享匹配上下文的情况下才能进行这种优化。如果它是共享的，Erlang的功能属性（也成为引用透明性）就会中断。</p>
+<h3 id="构造Binaries"><a href="#构造Binaries" class="headerlink" title="构造Binaries"></a>构造Binaries</h3><p>附加到二进制或位串是特别优化的运行时系统：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;&lt;Binary/binary, ...&gt;&gt;</span><br><span class="line">&lt;&lt;Binary/bitstring, ...&gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>当运行时系统处理优化（而不是编译器）时，很少有优化不起作用的情况。<br>工作原理：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Bin0 = &lt;&lt;0&gt;&gt;,                    %% 1</span><br><span class="line">Bin1 = &lt;&lt;Bin0/binary,1,2,3&gt;&gt;,    %% 2</span><br><span class="line">Bin2 = &lt;&lt;Bin1/binary,4,5,6&gt;&gt;,    %% 3</span><br><span class="line">Bin3 = &lt;&lt;Bin2/binary,7,8,9&gt;&gt;,    %% 4</span><br><span class="line">Bin4 = &lt;&lt;Bin1/binary,17&gt;&gt;,       %% 5 !!!</span><br><span class="line">&#123;Bin4,Bin3&#125;                      %% 6</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一行将堆二进制分配给Bin0变量。</li>
+<li>第二行是追加操作。由于在追加操作中没有涉及到Bin0，所以创建了一个新的refc二进制文件，并将Bin0的内容复制到其中。refc二进制文件的ProcBin部分将其大小存储在二进制文件中的数据的大小，而二进制对象则分配了额外的空间。二进制对象的大小是Bin1或256的两倍（比较大的为准）这里是256。</li>
+<li>第三行在追加操作中使用了Bin1，它在末尾有252个字节的未使用的存储，因此有3个新字节存储在哪里。</li>
+<li>第四行，和第三行一样。还剩余249个字节，所以再存储3个字节没有问题。</li>
+<li>第五行，结果不是追加到Bin3中的前一个结果，而是追加到Bin1.预计Bin4将被赋值&lt;&lt;0, 1, 2, 3, 17&gt;&gt;。我们也希望Bin3能够保持它的值（&lt;&lt;0,1,2,3,4,5,6,7,8,9&gt;&gt;）。显然，运行时系统不能将字节17写入二进制文件，因为会将Bin3的值更改为&lt;&lt;0,1,2,3,4,17,6,7,8,9&gt;&gt;。<br>运行时系统看到Bin1是前一个追加操作（而不是最新追加操作）的结果，所以它将Bin1的内容复制到一个新的二进制文件中，并保留额外的存储空间，等等。</li>
+</ul>
+<h4 id="迫使复制的情况-Circumstances-That-Force-Copying"><a href="#迫使复制的情况-Circumstances-That-Force-Copying" class="headerlink" title="迫使复制的情况 (Circumstances That Force Copying)"></a>迫使复制的情况 (Circumstances That Force Copying)</h4><p>二进制附加操作的优化要求二进制只有一个ProcBin和一个对ProcBin的引用。原因是二进制对象可以在追加操作期间移动（重新分配），当这种情况发生时，ProcBin中的指针必须更新。如果由多个ProcBin指向二进制对象，就不可能找到并更新所有这些对象。<br>因此，对二进制文件的某些操作将对其进行标记，以便将来的任何附加操作都将被迫复制二进制文件。在大多数情况下，二进制对象将同时回收，以收回分配给增长的额外空间。<br>当附加到一个二进制文件如下，只有从最新的附加操作返回的二进制文件将支持进一步的廉价附加操作：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bin = &lt;&lt;Bin0,...&gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>在本节开头的代码片段中，向Bin添加内容很廉价。而向Bin0添加内容将强制创建一个新的二进制文件并复制Bin0的内容。<br>如果将二进制文件作为消息发送到进程或端口，二进制文件将被缩小，任何进一步的追加操作都将把二进制数据复制到新的二进制文件中。例如，在下面的代码片段中，Bin1将被复制到第三行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bin1 = &lt;&lt;Bin0,...&gt;&gt;,</span><br><span class="line">PortOrPid ! Bin1,</span><br><span class="line">Bin = &lt;&lt;Bin1,...&gt;&gt;  %% Bin1 will be COPIED</span><br></pre></td></tr></table></figure>
+<p>如果在Ets表中插入一个二进制文件，使用erlang:port_command/2将其发送到端口，或者在NIF中将其传递给enif_inspect_binary，也会发生相同的情况。<br>匹配一个二进制也会导致它缩小，下一个追加操作将复制二进制数据:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bin1 = &lt;&lt;Bin0,...&gt;&gt;,</span><br><span class="line">&lt;&lt;X,Y,Z,T/binary&gt;&gt; = Bin1,</span><br><span class="line">Bin = &lt;&lt;Bin1,...&gt;&gt;  %% Bin1 will be COPIED</span><br></pre></td></tr></table></figure>
+<p>原因是match上下文包含一个指向二进制数据的指针。<br>如果一个进程简单地保留二进制文件（无论是在“循环数据”中还是在进程字典中），垃圾收集器最终会缩小二进制文件。如果只保留一个这样的二进制文件，它就不会缩小。如果进程后来附加到已缩小的二进制文件中，则将重新分配二进制对象，以便为要附加的数据腾出位置。</p>
+<h2 id="列表管理"><a href="#列表管理" class="headerlink" title="列表管理"></a>列表管理</h2><h3 id="创建一个列表"><a href="#创建一个列表" class="headerlink" title="创建一个列表"></a>创建一个列表</h3><p>列表只能从末尾开始构建，并在开头附加列表元素。如果您像下面这样使用“++”操作符，就会创建一个新的列表，它是列表1中的元素的副本，跟上列表2：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">List1 ++ List2</span><br></pre></td></tr></table></figure>
+<p>list:append/1或++如何在普通Erlang中实现，显然第一个列表是复制的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">append([H|T], Tail) -&gt;</span><br><span class="line">    [H|append(T, Tail)];</span><br><span class="line">append([], Tail) -&gt;</span><br><span class="line">    Tail.</span><br></pre></td></tr></table></figure>
+<p>在递归和构建列表时，一定要确保将新元素附加到列表的开头。通过这种方式，您将构建一个列表，而不是不断增长的结果列表的数百或数千个副本。</p>
+<p>以下是不推荐的做法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">bad_fib(N) -&gt;</span><br><span class="line">    bad_fib(N, 0, 1, []).</span><br><span class="line"></span><br><span class="line">bad_fib(0, _Current, _Next, Fibs) -&gt;</span><br><span class="line">    Fibs;</span><br><span class="line">bad_fib(N, Current, Next, Fibs) -&gt; </span><br><span class="line">    bad_fib(N - 1, Next, Current + Next, Fibs ++ [Current]).</span><br></pre></td></tr></table></figure>
+
+<p>这里构建了多个列表。在每个迭代步骤中，都会创建一个比前一个新列表长一个元素的新列表。<br>为了避免在每次迭代中复制结果，以相反的顺序构建列表，并在完成时将列表反转：</p>
+<p>推荐写法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tail_recursive_fib(N) -&gt;</span><br><span class="line">    tail_recursive_fib(N, 0, 1, []).</span><br><span class="line"></span><br><span class="line">tail_recursive_fib(0, _Current, _Next, Fibs) -&gt;</span><br><span class="line">    lists:reverse(Fibs);</span><br><span class="line">tail_recursive_fib(N, Current, Next, Fibs) -&gt; </span><br><span class="line">    tail_recursive_fib(N - 1, Next, Current + Next, [Current|Fibs]).</span><br></pre></td></tr></table></figure>
+
+<h3 id="列表推导"><a href="#列表推导" class="headerlink" title="列表推导"></a>列表推导</h3><p>列表推导在过去很慢。因为过去是用funs来实现的，而funs以前的速度很慢。<br>列表推导：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[Expr(E) || E &lt;- List]</span><br></pre></td></tr></table></figure>
+<p>这个基本上会被翻译成一个local function：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&apos;lc^0&apos;([E|Tail], Expr) -&gt;</span><br><span class="line">    [Expr(E)|&apos;lc^0&apos;(Tail, Expr)];</span><br><span class="line">&apos;lc^0&apos;([], _Expr) -&gt; [].</span><br></pre></td></tr></table></figure>
+<p>如果列表推导的结果明显不被使用，那么列表将不会被构造。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[io:put_chars(E) || E &lt;- List],</span><br><span class="line">ok.</span><br></pre></td></tr></table></figure>
+<p>或者在以下这种代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">case Var of</span><br><span class="line">    ... -&gt;</span><br><span class="line">        [io:put_chars(E) || E &lt;- List];</span><br><span class="line">    ... -&gt;</span><br><span class="line">end,</span><br><span class="line">some_function(...),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这个值没有分配给一个变量，没有传递给另一个函数，也没有返回。这意味着不需要构造一个列表，编译器将简化列表推导的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&apos;lc^0&apos;([E|Tail], Expr) -&gt;</span><br><span class="line">    Expr(E),</span><br><span class="line">    &apos;lc^0&apos;(Tail, Expr);</span><br><span class="line">&apos;lc^0&apos;([], _Expr) -&gt; [].</span><br></pre></td></tr></table></figure>
+<p>编译器也知道赋值给’_’意味着这个值不会被使用。因此，下面例子中的代码也将被优化：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">_ = [io:put_chars(E) || E &lt;- List],</span><br><span class="line">ok.</span><br></pre></td></tr></table></figure>
+
+<h3 id="多重嵌套和平滑列表"><a href="#多重嵌套和平滑列表" class="headerlink" title="多重嵌套和平滑列表"></a>多重嵌套和平滑列表</h3><p>lists:flatten/1建立一个全新的列表。因此，它是昂贵的，甚至比++操作符（它复制它的左参数，但不复制它的右参数）还要昂贵。<br>在以下情况下，你可以很容易地避免调用lists:flatten/1:<br>将数据发送到端口时。端口可以理解成深度列表，因此在将列表发送到端口之前没有理由将其压平。<br>当调用接受深度列表的BIFs时，比如list_to_binary/1或iolist_to_binary/1。<br>当知道列表中只有一层时，lists:append/1。<br>例子<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">port_command(Port, DeepList)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">port_command(Port, lists:flatten(DeepList))</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>向端口发送零终止字符串的一种常见方法如下：<br>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">TerminatedStr = String ++ [0], % String=&quot;foo&quot; =&gt; [$f, $o, $o, 0]</span><br><span class="line">port_command(Port, TerminatedStr)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>Do</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TerminatedStr = [String, 0], % String=&quot;foo&quot; =&gt; [[$f, $o, $o], 0]</span><br><span class="line">port_command(Port, TerminatedStr) </span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>扩展例子<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; lists:append([[1], [2], [3]]).</span><br><span class="line">[1,2,3]</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; lists:flatten([[1], [2], [3]]).</span><br><span class="line">[1,2,3]</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="递归函数列表"><a href="#递归函数列表" class="headerlink" title="递归函数列表"></a>递归函数列表</h3><p>主体递归列表函数和尾递归函数之间没有太大的区别，后者在结束时反转列表。因此集合经历编写漂亮的代码，忘记列表函数的性能，在代码的时间关键部分（并且只在哪里），在重写代码之间进行度量。<br>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">recursive_sum([H|T]) -&gt; H+recursive_sum(T);</span><br><span class="line">recursive_sum([])    -&gt; 0.</span><br></pre></td></tr></table></figure>
+<p>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sum(L) -&gt; sum(L, 0).</span><br><span class="line"></span><br><span class="line">sum([H|T], Sum) -&gt; sum(T, Sum + H);</span><br><span class="line">sum([], Sum)    -&gt; Sum.</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Functions"><a href="#Functions" class="headerlink" title="Functions"></a>Functions</h2><h3 id="模式匹配-Pattern-Matching"><a href="#模式匹配-Pattern-Matching" class="headerlink" title="模式匹配 Pattern Matching"></a>模式匹配 Pattern Matching</h3><p>编译器对函数头中的模式匹配以及case和receive子句进行了优化。除了少数例外，重新排列没有任何好处。<br>一个例外是二进制文件的模式匹配。编译器不会重新排列与二进制文件匹配的子句。最后放置与空二进制文件匹配的子句通常比首先放置它稍微快一些。<br>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">atom_map1(one) -&gt; 1;</span><br><span class="line">atom_map1(two) -&gt; 2;</span><br><span class="line">atom_map1(three) -&gt; 3;</span><br><span class="line">atom_map1(Int) when is_integer(Int) -&gt; Int;</span><br><span class="line">atom_map1(four) -&gt; 4;</span><br><span class="line">atom_map1(five) -&gt; 5;</span><br><span class="line">atom_map1(six) -&gt; 6.</span><br></pre></td></tr></table></figure>
+<p>改写为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">atom_map2(one) -&gt; 1;</span><br><span class="line">atom_map2(two) -&gt; 2;</span><br><span class="line">atom_map2(three) -&gt; 3;</span><br><span class="line">atom_map2(four) -&gt; 4;</span><br><span class="line">atom_map2(five) -&gt; 5;</span><br><span class="line">atom_map2(six) -&gt; 6;</span><br><span class="line">atom_map2(Int) when is_integer(Int) -&gt; Int.</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">atom_map3(Int) when is_integer(Int) -&gt; Int;</span><br><span class="line">atom_map3(one) -&gt; 1;</span><br><span class="line">atom_map3(two) -&gt; 2;</span><br><span class="line">atom_map3(three) -&gt; 3;</span><br><span class="line">atom_map3(four) -&gt; 4;</span><br><span class="line">atom_map3(five) -&gt; 5;</span><br><span class="line">atom_map3(six) -&gt; 6.</span><br></pre></td></tr></table></figure>
+<p>提供更高效的匹配代码<br>另外一个例子<br>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">map_pairs1(_Map, [], Ys) -&gt;</span><br><span class="line">    Ys;</span><br><span class="line">map_pairs1(_Map, Xs, [] ) -&gt;</span><br><span class="line">    Xs;</span><br><span class="line">map_pairs1(Map, [X|Xs], [Y|Ys]) -&gt;</span><br><span class="line">    [Map(X, Y)|map_pairs1(Map, Xs, Ys)].</span><br></pre></td></tr></table></figure>
+<p>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">map_pairs2(_Map, [], Ys) -&gt;</span><br><span class="line">    Ys;</span><br><span class="line">map_pairs2(_Map, [_|_]=Xs, [] ) -&gt;</span><br><span class="line">    Xs;</span><br><span class="line">map_pairs2(Map, [X|Xs], [Y|Ys]) -&gt;</span><br><span class="line">    [Map(X, Y)|map_pairs2(Map, Xs, Ys)].</span><br></pre></td></tr></table></figure>
+<p>编译器将生成类似这样的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">explicit_map_pairs(Map, Xs0, Ys0) -&gt;</span><br><span class="line">    case Xs0 of</span><br><span class="line">	[X|Xs] -&gt;</span><br><span class="line">	    case Ys0 of</span><br><span class="line">		[Y|Ys] -&gt;</span><br><span class="line">		    [Map(X, Y)|explicit_map_pairs(Map, Xs, Ys)];</span><br><span class="line">		[] -&gt;</span><br><span class="line">		    Xs0</span><br><span class="line">	    end;</span><br><span class="line">	[] -&gt;</span><br><span class="line">	    Ys0</span><br><span class="line">    end.</span><br></pre></td></tr></table></figure>
+<p>对于输入列表不是空的或非常短的最常见情况，这可能稍微快一些。（另一个优点是，透析器可以推断出一个更好的Xs变量类型。）</p>
+<h3 id="Function-Calls-函数调用"><a href="#Function-Calls-函数调用" class="headerlink" title="Function Calls (函数调用)"></a>Function Calls (函数调用)</h3><p>这是对不同调用的相对成本的一个有意的粗略指导。</p>
+<ul>
+<li>调用本地或外部函数（foo(), m:foo()）是最快的调用。</li>
+<li>调用或应用一个fun（fun(), apply(fun, [])）大约是调用一个本地函数三倍。</li>
+<li>应用一个导出函数（Mod:Name(), apply(Mod, Name, [])）的开销大约是调用一个函数的两倍，或者是调用一个本地函数的六倍。</li>
+</ul>
+<p>注释和实现细节<br>调用和应用一个fun函数不涉及任何散列表查找。fun包含一个（间接）指向实现该fun的函数的指针。<br>apply/3必须在散列表中查找要执行函数的代码。因此他总是比直接调用或fun 的调用慢。<br>从性能上，你是否编写以下的代码不再重要。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Module:Function(Arg1, Arg2)</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply(Module, Function, [Arg1, Arg2])</span><br></pre></td></tr></table></figure>
+<p>编译器在内部将后一种代码重写为前一种代码。<br>下面的代码稍微慢一些，因为参数列表的形状在编译时是未知的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply(Module, Function, Arguments)</span><br></pre></td></tr></table></figure>
+
+<h3 id="递归中的内存使用-Memory-Usage-in-Recursion"><a href="#递归中的内存使用-Memory-Usage-in-Recursion" class="headerlink" title="递归中的内存使用 (Memory Usage in Recursion)"></a>递归中的内存使用 (Memory Usage in Recursion)</h3><p>当编写递归函数时，最好是让它们尾部递归，这样它们就可以在恒定的内存空间中执行：<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">list_length(List) -&gt;</span><br><span class="line">    list_length(List, 0).</span><br><span class="line"></span><br><span class="line">list_length([], AccLen) -&gt; </span><br><span class="line">    AccLen; % Base case</span><br><span class="line"></span><br><span class="line">list_length([_|Tail], AccLen) -&gt;</span><br><span class="line">    list_length(Tail, AccLen + 1). % Tail-recursive</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">list_length([]) -&gt;</span><br><span class="line">    0. % Base case</span><br><span class="line">list_length([_ | Tail]) -&gt;</span><br><span class="line">    list_length(Tail) + 1. % Not tail-recursive</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="表和数据库-Tables-and-Databases"><a href="#表和数据库-Tables-and-Databases" class="headerlink" title="表和数据库 (Tables and Databases)"></a>表和数据库 (Tables and Databases)</h2><h3 id="Ets-Dets-and-Mnesia"><a href="#Ets-Dets-and-Mnesia" class="headerlink" title="Ets, Dets, and Mnesia"></a>Ets, Dets, and Mnesia</h3><p>每个使用Ets的例子在Mnesia都有一个对应的例子。一般来说，所有的Ets例子也适用于Dets表。</p>
+<p>Select/Match Operations</p>
+<p>Ets和Meesia表上的Select/match操作可能会变得非常昂贵。它们通常需要扫描整个表。尝试构造数据，以最小化选择/匹配操作的需要。但是，如果需要select/match操作，它仍然比使用tab2list更有效。<br>函数 ets:select/2和mnesia:select/3优先于ets:match/2、ets:match_object/2和mnesia:match_object/3。</p>
+<p>在某些情况下，select/match操作不需要扫描整个表。例如，在搜索ordered_set表时，如果键的一部分被绑定，或者如果它是一个Mnesia表，并且字段上有一个被选择/匹配的二级索引。如果键是完全绑定的，那么执行select/match就没有意义，除非有一个bag表，并且只对具有特定键的元素子集感兴趣。</p>
+<p>在创建用于select/match操作的记录时，如果大多数字段都是“_”</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#person&#123;age = 42, _ = &apos;_&apos;&#125;.</span><br></pre></td></tr></table></figure>
+
+<p>Deleting an Element</p>
+<p>如果元素不在表中，则认为删除操作成功。因为，在删除之前，所有检查元素是否存在于Ets/Mnesia表中的尝试都是不必要的。<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">ets:delete(Tab, Key),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">case ets:lookup(Tab, Key) of</span><br><span class="line">    [] -&gt;</span><br><span class="line">        ok;</span><br><span class="line">    [_|_] -&gt;</span><br><span class="line">        ets:delete(Tab, Key)</span><br><span class="line">end,</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>Fetching Data<br>不要获取已经拥有的数据。<br>假设有一个处理抽象数据类型Person的模块。导出接口函数print_person/1，该函数使用内部函数print_name/1、print_age/1和print_occupational/1。<br>如果print_name/1等函数是接口函数，情况就会有所不同。<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">%%% Interface function</span><br><span class="line">print_person(PersonId) -&gt;</span><br><span class="line">    %% Look up the person in the named table person,</span><br><span class="line">    case ets:lookup(person, PersonId) of</span><br><span class="line">        [Person] -&gt;</span><br><span class="line">            print_name(Person),</span><br><span class="line">            print_age(Person),</span><br><span class="line">            print_occupation(Person);</span><br><span class="line">        [] -&gt;</span><br><span class="line">            io:format(&quot;No person with ID = ~p~n&quot;, [PersonID])</span><br><span class="line">    end.</span><br><span class="line"></span><br><span class="line">%%% Internal functions</span><br><span class="line">print_name(Person) -&gt; </span><br><span class="line">    io:format(&quot;No person ~p~n&quot;, [Person#person.name]).</span><br><span class="line">                      </span><br><span class="line">print_age(Person) -&gt; </span><br><span class="line">    io:format(&quot;No person ~p~n&quot;, [Person#person.age]).</span><br><span class="line"></span><br><span class="line">print_occupation(Person) -&gt; </span><br><span class="line">    io:format(&quot;No person ~p~n&quot;, [Person#person.occupation]).</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">%%% Interface function</span><br><span class="line">print_person(PersonId) -&gt;</span><br><span class="line">    %% Look up the person in the named table person,</span><br><span class="line">    case ets:lookup(person, PersonId) of</span><br><span class="line">        [Person] -&gt;</span><br><span class="line">            print_name(PersonID),</span><br><span class="line">            print_age(PersonID),</span><br><span class="line">            print_occupation(PersonID);</span><br><span class="line">        [] -&gt;</span><br><span class="line">            io:format(&quot;No person with ID = ~p~n&quot;, [PersonID])</span><br><span class="line">    end.</span><br><span class="line"></span><br><span class="line">%%% Internal functionss</span><br><span class="line">print_name(PersonID) -&gt; </span><br><span class="line">    [Person] = ets:lookup(person, PersonId),</span><br><span class="line">    io:format(&quot;No person ~p~n&quot;, [Person#person.name]).</span><br><span class="line"></span><br><span class="line">print_age(PersonID) -&gt; </span><br><span class="line">    [Person] = ets:lookup(person, PersonId),</span><br><span class="line">    io:format(&quot;No person ~p~n&quot;, [Person#person.age]).</span><br><span class="line"></span><br><span class="line">print_occupation(PersonID) -&gt; </span><br><span class="line">    [Person] = ets:lookup(person, PersonId),</span><br><span class="line">    io:format(&quot;No person ~p~n&quot;, [Person#person.occupation]).</span><br></pre></td></tr></table></figure>
+
+<p>Non-Persistent Database Storage<br>对于非持久性数据库存储，最好使用Ets表，而不是Mnesia local_content表，甚至Mnesia dirty_write操作与Ets的写操作相比也有固定的开销。Mnesia必须检查表是否被复制或者是否有索引，这至少涉及到每个dirty_write的一个Ets查找。因此，Ets的写速度总是比Mnesia快。</p>
+<p>tab2list<br>假设使用indo作为键值得Ets表包括以下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[#person&#123;idno = 1, name = &quot;Adam&quot;,  age = 31, occupation = &quot;mailman&quot;&#125;,</span><br><span class="line"> #person&#123;idno = 2, name = &quot;Bryan&quot;, age = 31, occupation = &quot;cashier&quot;&#125;,</span><br><span class="line"> #person&#123;idno = 3, name = &quot;Bryan&quot;, age = 35, occupation = &quot;banker&quot;&#125;,</span><br><span class="line"> #person&#123;idno = 4, name = &quot;Carl&quot;,  age = 25, occupation = &quot;mailman&quot;&#125;]</span><br></pre></td></tr></table></figure>
+<p>如果必须返回Ets表中存储的所有数据，可以使用Ets:tab2list/1。然而，通常您只对信息的一个子集感兴趣，在这种情况下，ets:tab2list/1是昂贵的。如果您只想从每个记录中提取一个字段，例如，每个人的年龄，那么：<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">ets:select(Tab,[&#123; #person&#123;idno=&apos;_&apos;, </span><br><span class="line">                          name=&apos;_&apos;, </span><br><span class="line">                          age=&apos;$1&apos;, </span><br><span class="line">                          occupation = &apos;_&apos;&#125;,</span><br><span class="line">                [],</span><br><span class="line">                [&apos;$1&apos;]&#125;]),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">TabList = ets:tab2list(Tab),</span><br><span class="line">lists:map(fun(X) -&gt; X#person.age end, TabList),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>又或者<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">ets:select(Tab,[&#123; #person&#123;idno=&apos;_&apos;, </span><br><span class="line">                          name=&quot;Bryan&quot;, </span><br><span class="line">                          age=&apos;$1&apos;, </span><br><span class="line">                          occupation = &apos;_&apos;&#125;,</span><br><span class="line">                [],</span><br><span class="line">                [&apos;$1&apos;]&#125;]),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">TabList = ets:tab2list(Tab),</span><br><span class="line">lists:foldl(fun(X, Acc) -&gt; case X#person.name of</span><br><span class="line">                                &quot;Bryan&quot; -&gt;</span><br><span class="line">                                    [X#person.age|Acc];</span><br><span class="line">                                 _ -&gt;</span><br><span class="line">                                     Acc</span><br><span class="line">                           end</span><br><span class="line">             end, [], TabList),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>REALLY DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">TabList = ets:tab2list(Tab),</span><br><span class="line">BryanList = lists:filter(fun(X) -&gt; X#person.name == &quot;Bryan&quot; end,</span><br><span class="line">                         TabList),</span><br><span class="line">lists:map(fun(X) -&gt; X#person.age end, BryanList),</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>Ordered_set Tables<br>如果要访问表中的数据，以便使表中的键的顺序变得重要，那么可以使用表类型ordered_set，而不是更常见的set表类型。对于键字段，ordered_set总是按照Erlang term顺序遍历，以便select、match_object和foldl等函数的返回值是按键值排序的。使用第一个和下一个操作遍历ordered_set也会返回有序的键。<br>ordered_set只保证按键顺序处理对象。即使结果中没有包含键，也会按键顺序显示来自ets:select/2等函数的结果。</p>
+<h3 id="Ets-Specific-Ets特有的"><a href="#Ets-Specific-Ets特有的" class="headerlink" title="Ets-Specific (Ets特有的)"></a>Ets-Specific (Ets特有的)</h3><p>Using Keys of Ets Table<br>Ets表时一个单键表（哈希表或按键排序的树），将作为一个单键表使用。换句话说，只要有可能就用这个键来查找。对set Ets表中已知键的查找是常量，而对ordered_set Ets表的查找是O(logN)。键查找总是比需要扫描整个表的调用更可取。<br>如果涉及到别的参数作为查询，建议建立索引表。</p>
+<h2 id="Processes-进程"><a href="#Processes-进程" class="headerlink" title="Processes(进程)"></a>Processes(进程)</h2><h3 id="Creating-an-Erlang-Process-创建一个Erlang进程"><a href="#Creating-an-Erlang-Process-创建一个Erlang进程" class="headerlink" title="Creating an Erlang Process(创建一个Erlang进程)"></a>Creating an Erlang Process(创建一个Erlang进程)</h3><p>与操作系统中的线程和进程相比，Erlang进程是轻量级的。<br>新生成的Erlang进程在不支持HiPE的非smp仿真器中使用309个内存单词。（SMP支持和HiPE支持都增加这个大小。）尺寸如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Erlang (BEAM) emulator version 5.6 [async-threads:0] [kernel-poll:false]</span><br><span class="line"></span><br><span class="line">Eshell V5.6  (abort with ^G)</span><br><span class="line">1&gt; Fun = fun() -&gt; receive after infinity -&gt; ok end end.</span><br><span class="line">#Fun&lt;...&gt;</span><br><span class="line">2&gt; &#123;_,Bytes&#125; = process_info(spawn(Fun), memory).</span><br><span class="line">&#123;memory,1232&#125;</span><br><span class="line">3&gt; Bytes div erlang:system_info(wordsize).</span><br><span class="line">309</span><br></pre></td></tr></table></figure>
+
+<p>堆区域（包括堆栈）的大小包括233个单词。垃圾收集器根据需要增加堆。<br>流程的主（外部）循环必须是尾部递归的。否则，堆栈会一直增长，知道进程终止。</p>
+<p>DO NOT</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">loop() -&gt; </span><br><span class="line">  receive</span><br><span class="line">     &#123;sys, Msg&#125; -&gt;</span><br><span class="line">         handle_sys_msg(Msg),</span><br><span class="line">         loop();</span><br><span class="line">     &#123;From, Msg&#125; -&gt;</span><br><span class="line">          Reply = handle_msg(Msg),</span><br><span class="line">          From ! Reply,</span><br><span class="line">          loop()</span><br><span class="line">  end,</span><br><span class="line">  io:format(&quot;Message is processed~n&quot;, []).</span><br></pre></td></tr></table></figure>
+<p>对io:format/2的调用永远不会执行，但是每次递归调用loop/0时，返回地址仍然会被推送到堆栈中。正确的写法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">loop() -&gt; </span><br><span class="line">   receive</span><br><span class="line">      &#123;sys, Msg&#125; -&gt;</span><br><span class="line">         handle_sys_msg(Msg),</span><br><span class="line">         loop();</span><br><span class="line">      &#123;From, Msg&#125; -&gt;</span><br><span class="line">         Reply = handle_msg(Msg),</span><br><span class="line">         From ! Reply,</span><br><span class="line">         loop()</span><br><span class="line"> end.</span><br></pre></td></tr></table></figure>
+
+<p>初始堆大小<br>默认的初始堆大小为233个word，这对于支持拥有数十万甚至数百万进程的Erlang系统来说是非常保守的。垃圾收集器根据需要增加和收缩堆。<br>在使用相对较少进程的系统中，可以通过使用erl 的+h选项或使用spawn_opt/4的min_heap_size选项在每个进程的基础上增加最小堆大小来提升性能。<br>好处的双重的：</p>
+<ul>
+<li>尽管垃圾收集器会增加堆的大小，但它会逐步增加堆的大小，这比在派生进程时直接建立更大的堆要昂贵得多。</li>
+<li>如果堆比存储在对上的数据量大得多，垃圾收集器也可以缩小堆；设置最小堆大小可以避免这种情况。</li>
+</ul>
+<p>注意：模拟器可能会使用更多的内存，而且由于垃圾收集发生的频率更低，所以可以更长时间地保存大型二进制文件。</p>
+<p>在有很多进程的系统中，运行时间较短的计算任务可以派生为具有更高最小堆大小的新进程。当进程完成时，它将计算结果发送到另一个进程并终止。如果正确计算了最小堆大小，则进程可能根本不需要进行任何垃圾收集。如果没有适当的度量，就不能尝试这种优化。</p>
+<h3 id="Process-Messages-进程消息"><a href="#Process-Messages-进程消息" class="headerlink" title="Process Messages (进程消息)"></a>Process Messages (进程消息)</h3><p>Erlang进程之间消息中的所有数据都会被复制，出了同一个Erlang节点上的refc二进制文件之外。<br>当消息被发送到另一个Erlang节点上的进程时，首先将其编码为Erlang外部格式，然后通过TCP/IP套接字发送。接收Erlang节点解码消息并将其分发到正确的进程。</p>
+<p>Constant Pool (常量池)<br>常量Erlang术语（也称文字）保存在常量池中；每个加载的模块都有自己的池。下面的函数并不是每次调用时都构建元组（只是为了在下一次运行垃圾收集器时丢弃它），但是元组位于模块的常量池中：<br>DO</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">days_in_month(M) -&gt;</span><br><span class="line">    element(M, &#123;31,28,31,30,31,30,31,31,30,31,30,31&#125;).</span><br></pre></td></tr></table></figure>
+<p>但是，如果一个常量被发送到另一个进程（或存储在Ets表中），它将被复制。原因是运行时必须能够跟踪所有对常量的引用，以便正确卸载包含常量的代码。（当代码被卸载时，常量被复制到引用它们的进程堆中。）在将来的Erlang/OTP版本中可能会消除对常量的复制。</p>
+<p>Loss of Sharing<br>在下列情况下，不会保留共用的分词：</p>
+<ul>
+<li>当一个term被发送到另一个进程时</li>
+<li>当衍生调用中将某个term作为初始流程参数传递时</li>
+<li>当一个trem存储在Ets表中时。</li>
+</ul>
+<p>这是一个优化。大多数应用程序不会发送带有共享子术语的消息。<br>下面的示例展示了如何创建共享子项：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">kilo_byte() -&gt;</span><br><span class="line">    kilo_byte(10, [42]).</span><br><span class="line"></span><br><span class="line">kilo_byte(0, Acc) -&gt;</span><br><span class="line">    Acc;</span><br><span class="line">kilo_byte(N, Acc) -&gt;</span><br><span class="line">    kilo_byte(N-1, [Acc|Acc]).</span><br></pre></td></tr></table></figure>
+<p>创建一个深度列表。如果调用list_to_binary/1，则深度列表可以转换为1024字节的二进制：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1&gt; byte_size(list_to_binary(efficiency_guide:kilo_byte())).</span><br><span class="line">1024</span><br></pre></td></tr></table></figure>
+<p>使用erts_debug:size/1 BIF，可以看到深度列表只需要22个word的堆空间：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2&gt; erts_debug:size(efficiency_guide:kilo_byte()).</span><br><span class="line">22</span><br></pre></td></tr></table></figure>
+<p>使用erts_debug:flat_size/1 BIF，可以在忽略共享的情况下计算深度列表的大小。当它被发送到另一个进程或存储在Ets表中时，它变成列表的大小：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">3&gt; erts_debug:flat_size(efficiency_guide:kilo_byte()).</span><br><span class="line">4094</span><br></pre></td></tr></table></figure>
+<p>可以验证的是，如果将数据插入Ets表，共享将丢失：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">4&gt; T = ets:new(tab, []).</span><br><span class="line">#Ref&lt;0.1662103692.2407923716.214181&gt;</span><br><span class="line">5&gt; ets:insert(T, &#123;key,efficiency_guide:kilo_byte()&#125;).</span><br><span class="line">true</span><br><span class="line">6&gt; erts_debug:size(element(2, hd(ets:lookup(T, key)))).</span><br><span class="line">4094</span><br><span class="line">7&gt; erts_debug:flat_size(element(2, hd(ets:lookup(T, key)))).</span><br><span class="line">4094</span><br></pre></td></tr></table></figure>
+<p>当数据通过Ets表时，erts_debug:size/1和erts_debug:flat_size/1返回相同的值。共享已经丢失。<br>在将来的Erlang/OTP版本中，可能会实现一种（可选地）保持共享的方式。</p>
+<h3 id="SMP-Emulator"><a href="#SMP-Emulator" class="headerlink" title="SMP Emulator"></a>SMP Emulator</h3><p>SMP仿真器（R11B中引入）通过运行几个Erlang调度器线程（通常与内核数量相同）来利用多核或多cpu计算机。每个调度器线程都以与非smp仿真器中的Erlang调度器相同的方式调度Erlang进程。<br>为了通过使用SMP模拟器获得性能，您的应用程序在大多数情况下必须有多个可运行的Erlang进程。否则，Erlang仿真器一次仍然只能运行一个Erlang进程，但是您必须为锁定支付开销。尽管Erlang/OTP试图尽可能地减少锁定开销，但它永远不会完全为零。</p>
+<h2 id="Drivers-驱动"><a href="#Drivers-驱动" class="headerlink" title="Drivers (驱动)"></a>Drivers (驱动)</h2><p>本节简要叙述如何编写高效驱动程序。</p>
+<h3 id="驱动和并发性"><a href="#驱动和并发性" class="headerlink" title="驱动和并发性"></a>驱动和并发性</h3><p>运行时系统总是在驱动程序中运行任何代码之前获取锁。<br>默认情况下，锁在驱动程序级别，也就是说，如果多个端口被打开到同一个驱动程序，那么同一时间只能运行一个端口的代码。<br>可以将驱动程序配置为每个端口有一个锁。<br>如果一个驱动程序以一种功能性的方式使用（即不持有状态，但只进行一些繁重的计算并返回结果），可以事先打开几个具有注册名称的端口，并且可以根据调度程序ID如下选择要使用的端口：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-define(PORT_NAMES(),</span><br><span class="line">	&#123;some_driver_01, some_driver_02, some_driver_03, some_driver_04,</span><br><span class="line">	 some_driver_05, some_driver_06, some_driver_07, some_driver_08,</span><br><span class="line">	 some_driver_09, some_driver_10, some_driver_11, some_driver_12,</span><br><span class="line">	 some_driver_13, some_driver_14, some_driver_15, some_driver_16&#125;).</span><br><span class="line"></span><br><span class="line">client_port() -&gt;</span><br><span class="line">    element(erlang:system_info(scheduler_id) rem tuple_size(?PORT_NAMES()) + 1,</span><br><span class="line">	    ?PORT_NAMES()).</span><br></pre></td></tr></table></figure>
+<p>只要调度程序不超过16个，驱动程序的端口锁就不会有任何锁争用。</p>
+<h3 id="在调用驱动程序时避免复制二进制文件"><a href="#在调用驱动程序时避免复制二进制文件" class="headerlink" title="在调用驱动程序时避免复制二进制文件"></a>在调用驱动程序时避免复制二进制文件</h3><p>基本上有两种方法可以避免拷贝发送到驱动程序的二进制文件：</p>
+<ul>
+<li>如果port_control/3的数据参数是二进制的，那么驱动程序将被传递一个指向二进制内容的指针，并且二进制不会被复制。如果数据参数是iolist(二进制文件和列表的列表)，iolist中的所有二进制文件都将被复制。因此，如果你项在不复制二进制文件的情况下将一个预先存在的二进制文件和一些额外的数据发送到一个驱动程序，您必须两次调用port_control/3；一次使用二进制，一次使用额外的数据，但是，这只在只有一个进程与端口通信的情况下才有效（因为其他进程可以在调用之间调用驱动程序）。</li>
+<li>在驱动程序中实现outputv回调（而不是输出回调）。如果驱动程序有一个outputv回调，那么在port_command/2的数据参数中传入iolist的refc二进制文件将作为对驱动程序的引用传递。</li>
+</ul>
+<h3 id="从驱动程序返回小的二进制文件"><a href="#从驱动程序返回小的二进制文件" class="headerlink" title="从驱动程序返回小的二进制文件"></a>从驱动程序返回小的二进制文件</h3><p>运行时系统可以将最多64字节的二进制文件表示为堆二进制文件。在发送消息时，它们总是被复制，但是如果不将它们发送到另一个进程，则需要更少的内存，而且垃圾收集也更便宜。</p>
+<h3 id="返回大型二进制文件而不从驱动程序中复制"><a href="#返回大型二进制文件而不从驱动程序中复制" class="headerlink" title="返回大型二进制文件而不从驱动程序中复制"></a>返回大型二进制文件而不从驱动程序中复制</h3><p>为了避免在驱动程序向Erlang进程发送或返回大型二进制文件时复制数据，驱动程序必须首先分配二进制文件，然后以某种方式将其发送给Erlang进程。<br>使用driver_alloc_binary来分配一个二进制文件。<br>有几种方法可以发送由dirver_alloc_binary()创建的二进制文件：</p>
+<ul>
+<li>在控件回调中，如果set_port_control_flags()被调用时带有PORT_CONTROL_FLAG_BINARY标志值，则可以返回一个二进制文件。</li>
+<li>可以使用driver_output_binary()发送单个二进制文件。</li>
+<li>使用erl_output_term()或erl_drv_send_term()，可以在Erlang term中包含二进制代码。</li>
+</ul>
+<h2 id="Advanced-（提升）"><a href="#Advanced-（提升）" class="headerlink" title="Advanced （提升）"></a>Advanced （提升）</h2><h3 id="内存-Memory"><a href="#内存-Memory" class="headerlink" title="内存(Memory)"></a>内存(Memory)</h3><p>高效编程的一个良好开端是了解不同数据类型和操作需要多少内存。Erlang数据类型和其他项消耗多少内存取决于实现，但下表显示OTP19.0中的erts-8.0系统的一些数据。<br>测量的单位是words。存在32位和64位实现。因此，一个字分别是4字节或8字节。</p>
+<p>1.Small integer<br>1word.<br>在32bit体系结构中 -134217729 &lt; i &lt; 134217728 (28 bits).<br>在64bit体系结构中 -576460752303423489 &lt; i &lt; 576460752303423488 (60 bits).</p>
+<p>2.Large integer<br>3..N words.</p>
+<p>3.Atom<br>1word.<br>原子引用到原子表，原子表也会内存。对于表中每个惟一的原子，atom文本存储一次。atom表没有垃圾收集。</p>
+<p>4.Float<br>在32bit体系结构中 4words.<br>在64bit体系结构中 3words.</p>
+<p>5.Binary<br>3..6words + data (可以被共享)</p>
+<p>6.List<br>1 word + 1 word per element + the size of each element.</p>
+<p>7.String(is the same as a list of integers)<br>1 word + 2 words per character.</p>
+<p>8.Tuple<br>2 words + the size of each element.</p>
+<p>9.Small Map<br>5 words + the size of all keys and values.</p>
+<p>10.Large Map(&gt; 32keys)<br>N x F words + the size of all keys and values.<br>N is the number of keys in the Map.<br>F is a sparsity factor that can vary between 1.6 and 1.8 due to the probabilistic nature of the internal HAMT data structure.</p>
+<p>11.Pid<br>1 word for a process identifier from the current local node + 5 words for a process identifier from another node.<br>A process identifier refers into a process table and a node table, which also consumes memory.</p>
+<p>12.Port<br>1 word for a port identifier from the current local node + 5 words for a port identifier from another node.<br>A port identifier refers into a port table and a node table, which also consumes memory.</p>
+<p>13.Reference<br>在32位架构上:当前本地节点引用5个words，另一个节点引用7个words。<br>在64位体系结构上:4个words表示当前本地节点的引用，6个words表示另一个节点的引用。<br>引用引用到节点表，节点表也消耗内存。</p>
+<p>13.Fun<br>9..13word+the size of environment。<br>一个Fun的表也会消耗内存。</p>
+<p>14.Ets Table<br>最初是768个words+每个element的大小(6个words+ Erlang数据的大小)。表在需要时增长。</p>
+<p>15.Erlang process<br>338个words，包括堆栈233个words。</p>
+<h3 id="系统限制-System-Limits"><a href="#系统限制-System-Limits" class="headerlink" title="系统限制 (System Limits)"></a>系统限制 (System Limits)</h3><p>Erlang语言规范对进程的数量、原子的长度等没有限制。但是，由于性能和内存节省的原因，在Erlang语言和执行环境的实际实现中总会有一些限制。</p>
+<p>1.Processes<br>默认情况下，同时活动的Erlang进程的最大数目是262,144。这个限制可以在启动时配置。有关更多信息，请参见erl(1)手册页中的+P命令行标志。</p>
+<p>2.Known nodes<br>如果X上存在来自Y的任何pid、端口、引用或函数(Erlang数据类型)，或者X和Y是连接的，则节点X必须知道远程节点Y。一个节点同时/已知的最大远程节点数受节点名可用原子数的限制。所有与远程节点相关的数据(除了节点名atom之外)都被垃圾收集。</p>
+<p>3.Connected nodes<br>同时连接的节点的最大数量受到同时已知远程节点的最大数量、可用端口的最大数量(Erlang)或可用套接字的最大数量的限制。</p>
+<p>4.Characters in an atom<br>255.</p>
+<p>5.Element in a tuple<br>元组中元素的最大数量是16,777,215(24位无符号整数)。</p>
+<p>6.Size of binary<br>在Erlang的32位实现中，536,870,911字节是可以使用位语法构造或匹配的最大二进制。在64位实现中，最大大小为2,305,843,009,213,693,951字节。如果超过了这个限制，位语法构造将失败，并出现system_limit异常，而匹配太大的二进制的任何尝试都将失败。这个限制从R11B-4开始实施。<br>在早期的Erlang/OTP版本中，对太大的二进制文件的操作通常要么失败，要么给出错误的结果。在将来的版本中，其他创建二进制文件的操作(如list_to_binary/1)可能也会执行相同的限制。</p>
+<p>7.Total amount of data allocated by an Erlang node<br>Erlang运行时系统可以使用完整的32位(或64位)地址空间，但操作系统常常限制单个进程使用少于32位(或64位)地址空间。</p>
+<p>8.Length of a node name<br>Erlang节点名的形式是host@shortname或host@longname。节点名在系统中用作原子，因此255的最大大小也适用于节点名。</p>
+<p>9.Open ports<br>同时打开Erlang端口的最大数量通常默认为16,384。这个限制可以在启动时配置。有关更多信息，请参见erl(1)手册页中的+Q命令行标志。</p>
+<p>10.Open files and sockets<br>同时打开的文件和套接字的最大数量取决于可用Erlang端口的最大数量，以及特定于操作系统的设置和限制。</p>
+<p>11.Number of arguments to a function or fun<br>255.</p>
+<p>12.Unique References on a Runtime System Instance<br>每个调度器线程都有自己的一组引用，而所有其他线程都有一组共享的引用。每组的引用包含2⁶⁴- 1独特的引用。,独特的引用的总量,可以产生在一个运行时系统实例(NoSchedulers + 1)×2 (⁶⁴- 1)。<br>如果调度器线程每隔纳秒创建一个新的引用，那么在超过584年后，引用最早将被重用。也就是说，在可预见的未来，它们足够独特。</p>
+<p>13.Unique Integers on a Runtime System Instance<br>有两种类型的惟一整数都是使用erlang:unique_integer() BIF:</p>
+<ul>
+<li>独特的整数创建的单调修饰符由一组2⁶⁴- 1独特的整数。</li>
+<li>独特的整数创建不单调修饰符由一组2⁶⁴- 1独特每个调度程序线程和一组整数2⁶⁴- 1独特的整数由其他线程共享。即独特的整数的总量没有单调修饰符(NoSchedulers + 1)×2 (⁶⁴- 1)。<br>如果每一纳秒都创建一个唯一的整数，那么在超过584年后，唯一整数最早将被重用。也就是说，在可预见的未来，它们足够独特。</li>
+</ul>
+<h2 id="Profiling"><a href="#Profiling" class="headerlink" title="Profiling"></a>Profiling</h2><h3 id="Do-Not-Guess-About-Performance-Profile"><a href="#Do-Not-Guess-About-Performance-Profile" class="headerlink" title="Do Not Guess About Performance - Profile"></a>Do Not Guess About Performance - Profile</h3><p>即使是经验丰富的软件开放人员也经常会错误地猜测程序中的性能平静瓶颈在哪里。因此，分析您的程序，看看性能瓶颈在哪里，并集中精力优化它们。<br>Erlang/OTP包含一些工具来帮助查找瓶颈：</p>
+<ul>
+<li>fprof 提供关于程序时间花在何处的最详细信息，但是它显著减慢了它配置的程序。</li>
+<li>eprof 提供程序中使用的每个函数的时间信息。没有生成调用图，但是eprof对它所配置的程序影响要小得多。<br>如果程序太大，无法由fprof或eprof进行概要分析，那么可以使用cprof来定位要使用fprof或eprof进行更全面概要分析的代码部分。</li>
+<li>cprof 是最轻量级的工具，但它只提供基于函数的执行计数（针对所有进程，而不是每个进程）。</li>
+<li>dbg 是通用的erlang跟踪前端。通过使用timestamp或cpu_timestamp选项，它可以用来计算在活动系统中调用函数所需的时间。</li>
+<li>lcnt用于在Erlang运行时系统的内部锁定机制中查找争用点。它在查找进程、端口、ets表和其他可以并行运行的实体之间的交互瓶颈时非常有用。<br>这些工具在tools中有进一步的描述。<br>除了Erlang/OTP之外，还有一些开源工具可用于帮助分析。其中一些是：</li>
+<li>erlgrind可用于在kcachegrind中可视化fprof数据。</li>
+<li>eflame是fprof的另一种选择，它将分析输出显示为一个flamegraph。</li>
+<li>recon 是Erlang分析和调试工具的集合。这个工具附带了一本名为《Erlang in Anger》的电子书。</li>
+</ul>
+<h3 id="Memory-profiling"><a href="#Memory-profiling" class="headerlink" title="Memory profiling"></a>Memory profiling</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eheap_alloc: Cannot allocate 1234567890 bytes of memory (of type &quot;heap&quot;).</span><br></pre></td></tr></table></figure>
+<p>上面的口号是Erlang终止的常见原因之一。由于未知的原因，Erlang运行时系统无法分配要使用的内存。发生这种情况时，会生成一个崩溃转储，其中包含系统耗尽内存时的状态信息。使用crashdump_viewer查看正在使用的内存。寻找具有大堆或多个消息、大型ets表等的进程。<br>在查看正在运行的系统中的内存使用情况时，最基本的活动信息的函数是erlang:memory()。它返回系统的当前内存使用情况。可以使用instrument/3来更详细地分析内存的使用情况。<br>然后，进程、端口和ets表可以使用各自的info函数进行检查，即erlang:process_info/2、erlang:port_info/2和ets:info/1。<br>有时，系统会进入这样一种状态 erlang:memory(total)报告的内存和OS报告的内存非常不同。这可能由于Erlang运行时系统内部的碎片造成的。关于如何分配内存的数据可以使用erlang:system_info(allocator)来检索。你从那个函数中的得到的数据是非常原始的，很难读懂。可以使用<br>conf_alloc从system_info统计计数器中提取有用的信息。</p>
+<h3 id="Large-Systems"><a href="#Large-Systems" class="headerlink" title="Large Systems"></a>Large Systems</h3><p>对于大型系统，在模拟的有限场景中运行概要分析是很有趣的。但是，只有在同时进行许多操作以及涉及许多节点时，才有可能出现瓶颈或导致问题。因此，在实际目标系统上的系统测试工厂中运行概要分析也是可取的。<br>还有一些工具可用于以或多或少的开销获得整个系统的视图。</p>
+<ul>
+<li>observer是一个GUI工具，可以连接到远程节点并显示有关运行系统的各种信息。</li>
+<li>etop是一个命令行工具，可以连接到远程节点并显示类似于UNIX工具top所显示的信息。</li>
+<li>msacc允许用户查看Erlang运行时系统在做什么。具有非常低的开销，这使得在负载沉重的系统中运行以了解从何处开始执行更习粒度的性能分析非常有用。</li>
+</ul>
+<h3 id="What-to-Look-For"><a href="#What-to-Look-For" class="headerlink" title="What to Look For"></a>What to Look For</h3><p>在分析一些来自分析活动的结果文件时，寻找哪些多次被调用并且有很长“自己”执行时间的函数（不包含对其他的函数的调用）。多次调用的也可能很有趣，因为如果经常重复，即使是很小的事情也可能累计到相当多。我们可以做一些什么来减少时间开销。</p>
+<ul>
+<li>有没有可能减少函数被调用的次数?</li>
+<li>如果更改测试的顺序，是否可以减少任何测试的运行频率？</li>
+<li>可以删除任何冗余测试吗？</li>
+<li>任何计算表达式每次都给出相同的结果吗？</li>
+<li>有没有其他的方法可以到达同样的效果并且更有效率呢？</li>
+<li>是否可以使用另一种内部数据表示来提高效率？<br>这些问题并不总是容易回答。如果您的理论是错误的，那么可能需要一些基准来支持您的理论，并避免使事情变得更慢。有关详细信息，请参见Benchmarking。</li>
+</ul>
+<h3 id="Tools"><a href="#Tools" class="headerlink" title="Tools"></a>Tools</h3><p>1.fprof<br>fprof 度量每个函数的执行时间，包括自己的时间（即函数执行自己所用的时间）和累计时间（包括调用的函数）。每个进程显示这些值。您还可以了解每个函数被调用的次数。<br>fprof 基于对文件的跟踪，以最小化运行时性能影响。使用fprof只是调用几个库函数的问题。</p>
+<p>2.eprof<br>eprof基于Erlang trace_info BIFs。eprof显示每个进程使用了多少时间，以及在那些调用中使用了这些时间。时间以总时间和绝对时间的百分比表示。</p>
+<p>3.cprof<br>cprof是介于fprof和cover之间的特性。它根据每个模块计算程序运行时调用每个函数的次数。cprof具有较低的性能下降效果（与fprof相比），并且不需要重新编译任何模块来配置（与cover相比）。</p>
+<p>4.dmg<br>dmg是一个通用的Erlang跟踪工具。通过使用timestamp或cpu_timestamp选项，可以将其用作一个精确的工具，以确定某个特定进程的函数调用需要多长时间。当试图了解在一个负载沉重的系统中，时间花在何处时，这可能非常有用，因为可以将分析的范围限制在非常小的范围内。</p>
+<p>5.lcnt</p>
+<h3 id="Benchmarking"><a href="#Benchmarking" class="headerlink" title="Benchmarking"></a>Benchmarking</h3><p>基准测试的主要目的是找出给定算法或函数在哪个实现是最快的。基准测试远非一门精确的科学。今天的操作系统通常运行后台任务，这些任务很难关闭。缓存和多个CPU核心不便于基准测试。在进行基准测试时，最好以单用户模式运行UNIX计算机，但这对于一般的测试来说是不方便的。<br>基准测试可以测量壁钟时间或CPU时间。</p>
+<ul>
+<li>timer:tc/3 测量壁钟时间。挂钟时间的优点是，测量中包含了操作系统内核中的I/O、交换和其他活动。缺点是度量值相差很大。通常，最好多次运行基准并注意最短时间，即在最佳情况下可能达到的最短时间。</li>
+<li>statistic/1 使用参数运行时度量在Erlang虚拟机中花费的CPU时间。CPU时间的优点是每次运行的结果都更加一致。缺点是不包括操作系统内核中花费的时间（如交换和I/O）。因此，如果涉及到任何I/O（文件或套接字），那么测量CPU时间就会产生误导。</li>
+</ul>
+<p>同时测量壁钟和CPU时间可能是一个好主意。<br>一些最后的建议：</p>
+<ul>
+<li>这两种度量类型的粒度都可以更高。因此，确保每个单独的测量至少持续几秒钟。</li>
+<li>为了使测试公平，每个新的测试运行都在它自己新创建的Erlang进程中运行。否则，如果所有测试都在同一个进程中运行，那么后面的测试一开始堆的大小就会更大，因此垃圾收集的数量可能会更少。还可以考虑在每次测试之间重新启动Erlang模拟器。</li>
+<li>不要认为在计算机体系结构X上给定算法的最快实现也就是在计算机体系结构Y上的最快实现。</li>
+</ul>
+<h2 id="重要的谬误"><a href="#重要的谬误" class="headerlink" title="重要的谬误"></a>重要的谬误</h2><h3 id="Funs-are-Slow"><a href="#Funs-are-Slow" class="headerlink" title="Funs are Slow"></a>Funs are Slow</h3><p>Funs曾经很慢，比apply/3慢。最初，funs只是使用编译器trickery、ordinary tuples、apply/3和大量的独创性来实现的。<br>但这是历史。Funs在R6B中有自己的数据类型，在R7B中进一步优化。现在，Fun调用的成本大致落在本地调用成本和apply/3之间。</p>
+<h3 id="List-Comprehensions-are-Slow"><a href="#List-Comprehensions-are-Slow" class="headerlink" title="List Comprehensions are Slow"></a>List Comprehensions are Slow</h3><p>列表推导过去是使用funs实现的，在过去funs确实很慢。<br>现在，编译器将列表推导重写为普通的递归函数。使用尾部递归函数并在末尾执行反向操作仍然会更快。</p>
+<h3 id="List-subtraction-“–”-operator-is-slow"><a href="#List-subtraction-“–”-operator-is-slow" class="headerlink" title="List subtraction (“–” operator) is slow"></a>List subtraction (“–” operator) is slow</h3><p>列表减法过去的运行时复杂度与操作数长度的乘积成正比，所以当两个列表都很长时，它的运行速度非常慢。<br>OTP 22的运行时复杂度是”nlogn”，即使两个列表都很长，操作也会很快完成。事实上，在使用ordset:subtract/2将两个列表转换为有序集之前，它比通常使用的方法更快，占用的内容更少。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/12/23/erlang_myths/" data-id="ck67mannu0008qj0270n18ef1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/12/24/erlang_characteristics/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Erlang语言特点
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/12/23/linux_cmd1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Linux命令1</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/04/erlang_xml/">Erlang中的XML</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/database_ddl/">数据定义</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/erlang_characteristics/">Erlang语言特点</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/erlang_myths/">Erlang性能指南</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/linux_cmd1/">Linux命令1</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

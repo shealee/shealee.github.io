@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>数据定义 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文主要讲述SQL数据定义语言。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据定义">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;24&#x2F;database_ddl&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文主要讲述SQL数据定义语言。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-12-24T07:50:38.493Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-database_ddl" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/12/24/database_ddl/" class="article-date">
+  <time datetime="2019-12-24T07:50:38.493Z" itemprop="datePublished">2019-12-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      数据定义
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文主要讲述SQL数据定义语言。</p>
+<a id="more"></a>
+
+<h2 id="数据定义"><a href="#数据定义" class="headerlink" title="数据定义"></a>数据定义</h2><p>SQL数据定义语言（DDL）允许创建和删除模式、域、表、视图和索引等数据库对象。<br>SQL主要定义的数据定义语句为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE SCHEMA                           DROP SCHEMA</span><br><span class="line">CREATE DOMAIN       ALTER DOMAIN        DROP DOMAIN</span><br><span class="line">CREATE TABLE        ALTER TABLE         DROP TABLE</span><br><span class="line">CREATE VIEW                             DROP VIEW</span><br></pre></td></tr></table></figure>
+<p>这些语句用于创建，更新和删除概念模式。许多DBMS提供下面两个语句，虽然SQL的标准并不支持：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE INDEX                            DROP INDEX</span><br></pre></td></tr></table></figure>
+
+<h3 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h3><p>根据ISO标准，关系和其他的数据库对象都存在于某个环境中。每个环境含一个或多个目录，每个目录中包括一组模式。模式是一组数据库对象的命名集合，该集合中的对象以某种方式相互关联。模式中的对象可以是表、视图、域、声明、序列、转变规则和字符集。模式中的所有对象有相同的所有者并且共享若干默认值。<br>模式定义语句有如下形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CREATE SCHEMA [Name | AUTHORIZATION CreatorIdentifier]</span><br><span class="line">例子：</span><br><span class="line">CREATE SCHEMA SqlTests AUTHORIZATION Smith;</span><br></pre></td></tr></table></figure>
+<p>可以使用DROP SCHEMA语句删除模式，形式如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DROP SCHEMA Name [RESTRICT | CASCADE]</span><br></pre></td></tr></table></figure>
+<p>如果指定了RESTRICT(它也是默认值)，则模式必须为空，否则删除操作将失败。如果指定CASCADE，那么将按前面定义的顺序级联地删除与模式相关的所有对象。如果任一删除操作失败，则DROP SCHEMA操作失败。带有CASCADE限定符的DROP SCHEMA语句影响范围非常大，使用时一定要十分小心谨慎。值得注意的是，CREATE 和 DROP SCHEMA语句并未得到广泛的实现。</p>
+<h3 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h3><p>创建数据库结构后，就可以在数据库中为基本关系创建表结构。可以通过CREATE TABLE语句实现，该语句基本语法规则如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE TableName</span><br><span class="line">    &#123;(columnName dataType [NOT NULL] [UNIQUE]</span><br><span class="line">    [DEFAULT defaultOption][CHECK (searchCondition)][,...]&#125;</span><br><span class="line">    [PRIMARY KEY (listOfColumns),]</span><br><span class="line">    &#123;[UNIQUE (listOfColumns)][,...]&#125;</span><br><span class="line">    &#123;[FOREIGN KEY (listOfForeignKeyColumns)</span><br><span class="line">    REFERENCES ParentTableName [(listOfCandidateKeyColumns)]]</span><br><span class="line">        [MATCH &#123;PARTIAL | FULL&#125;</span><br><span class="line">        [ON UPDATE referentialAction]</span><br><span class="line">        [ON DELETE referentialAction]][,...]&#125;</span><br><span class="line">    &#123;[CHECK (searchCondition)],[,...]&#125;);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/12/24/database_ddl/" data-id="ck67mannl0001qj0299fj7xuf" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/02/04/erlang_xml/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Erlang中的XML
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/12/24/erlang_characteristics/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Erlang语言特点</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/04/erlang_xml/">Erlang中的XML</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/database_ddl/">数据定义</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/erlang_characteristics/">Erlang语言特点</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/erlang_myths/">Erlang性能指南</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/linux_cmd1/">Linux命令1</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

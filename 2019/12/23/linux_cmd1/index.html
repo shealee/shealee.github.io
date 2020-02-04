@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Linux命令1 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="该文档主要描述Linux的一些命令。find、awk、cut命令等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux命令1">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;23&#x2F;linux_cmd1&#x2F;index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="该文档主要描述Linux的一些命令。find、awk、cut命令等。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-12-23T02:48:54.387Z">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-linux_cmd1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/12/23/linux_cmd1/" class="article-date">
+  <time datetime="2019-12-23T02:48:54.387Z" itemprop="datePublished">2019-12-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux命令1
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>该文档主要描述Linux的一些命令。find、awk、cut命令等。</p>
+<a id="more"></a>
+
+<h2 id="Linux-Cmd"><a href="#Linux-Cmd" class="headerlink" title="Linux Cmd"></a>Linux Cmd</h2><h3 id="find-命令"><a href="#find-命令" class="headerlink" title="find 命令"></a>find 命令</h3><p>有以下的这些参数<br>1.-name<br>根据文件名去匹配</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -name *.mp3</span><br></pre></td></tr></table></figure>
+
+<p>2.-type<br>根据文件类型去匹配</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -type f/d/p/c/b/s/l</span><br></pre></td></tr></table></figure>
+
+<p>3.-size<br>根据文件大小去匹配<br>默认单位：512B–&gt;0.5K –&gt; 一个扇区大小</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find ./ size +3M -size -7M</span><br><span class="line">find ./ size +47k -size -89k</span><br></pre></td></tr></table></figure>
+
+<p>4.-maxdepth: 最大深度<br>递归层数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find ./ type d | wc -l 会把所有文件递归查找总数用这个参数就可以防止递归，后面跟的数字是几层</span><br><span class="line">find ./ maxdepth 2 -type d</span><br></pre></td></tr></table></figure>
+
+<p>5.-exex、-ok<br>exec表示执行{}表示前面的那一串，;代表结束标记</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -maxdepth 1 -name &quot;*.sh&quot; -exec rm -r &#123;&#125; \;</span><br></pre></td></tr></table></figure>
+<p>ok会有是否删除提示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -maxdepth 1 -name &quot;*.sh&quot; -ok rm -r &#123;&#125; \;</span><br></pre></td></tr></table></figure>
+
+<p>6.-printO<br>加printO在每个查询结果后都加上一个-O结束。</p>
+<p>7.xargs<br>可以和管道配合</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -maxdepth 1 -type f -printO | xargs -O ls -lh</span><br></pre></td></tr></table></figure>
+
+<p>8.-atime -mtime -ctime<br>atime 访问时间<br>mtime 文件内容修改时间<br>ctime 文件属性修改时间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -name &quot;.sh&quot; -mtime -5 -exec ls -lh &#123;&#125; \;</span><br></pre></td></tr></table></figure>
+
+<h3 id="awk命令"><a href="#awk命令" class="headerlink" title="awk命令"></a>awk命令</h3><p>语法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">awk [选项参数] &apos;script&apos; var=value file(s)</span><br><span class="line">或</span><br><span class="line">awk [选项参数] -f scriptfile var=value file(s)</span><br></pre></td></tr></table></figure>
+<p>选项参数说明<br>-F fs or –file-separator fs</p>
+<p>-v var=value or -asign var=value<br>赋值一个用户定义变量。</p>
+<p>-f scriptfile or –file scriptfile<br>从脚本文件中读取awk命令。</p>
+<p>-mf nnn and -mr nnn<br>对nnn值设置内在限制，-mf选项限制分配给nnn的最大块数目；这两个功能是Bell实验室版awk的扩展功能，在标准awk中不适用。</p>
+<h3 id="cut-命令"><a href="#cut-命令" class="headerlink" title="cut 命令"></a>cut 命令</h3><p>语法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cut [-bn] [file]</span><br><span class="line">cut [-c] [file]</span><br><span class="line">cut [-df] [file]</span><br></pre></td></tr></table></figure>
+<p>cut命令从文件的每一行剪切字节、字符和字段并将这些字节、字符和字段写至标准输出。<br>如果不指定File参数、cut命令将读取标准输入。必须指定-b、-c或-f标志之一。<br>参数：<br>-b: 以字节为单位进行分割。这些字节位置将忽略多字节符边界，排非也指定了-n标志。<br>-c：以字符为单位进行分割。<br>-d：自定义分隔符，默认显示那个区域。<br>-f：与-d一起使用，指定显示哪个区域。<br>-n：取消分割多字节字符。仅和-b标志一起使用。如果字符的最后一个字节落在由-b标志的List参数指示的范围之内，该字符将被写出；否则，该字符将被排除。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/12/23/linux_cmd1/" data-id="ck67mannq0005qj020vkx47sa" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/12/23/erlang_myths/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Erlang性能指南
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/12/19/erlang_system_principles/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Erlang系统原则</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/04/erlang_xml/">Erlang中的XML</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/database_ddl/">数据定义</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/erlang_characteristics/">Erlang语言特点</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/erlang_myths/">Erlang性能指南</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/23/linux_cmd1/">Linux命令1</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Shealee<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
