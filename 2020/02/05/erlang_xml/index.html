@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="本文档主要讲述Erlang中的XML相关的。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-02-05T02:56:04.895Z">
+<meta property="og:updated_time" content="2020-02-05T07:20:40.602Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -65,7 +65,7 @@
         <section id="main"><article id="post-erlang_xml" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/02/05/erlang_xml/" class="article-date">
-  <time datetime="2020-02-05T02:56:04.895Z" itemprop="datePublished">2020-02-05</time>
+  <time datetime="2020-02-05T07:20:40.601Z" itemprop="datePublished">2020-02-05</time>
 </a>
     
   </div>
@@ -143,7 +143,9 @@
 <li>XmlAttributes = #xmlAttribute{}<br>有关回调模块和根属性的详细信息，请参阅export/3。在传递回调模块之前，xml数据总是转换为正常形式。<br>See also: export/3, export_simple/2.</li>
 </ul>
 <p>9.export_simple_content(Content, Callback) -&gt; term()<br>直接导出简单的XML内容，不需要进一步的上下文。<br>10.export_simple_element(Content, Callback) -&gt; term()<br>直接导出简单的XML元素，不需要进一步的上下文。</p>
-<h3 id="定制函数"><a href="#定制函数" class="headerlink" title="定制函数"></a>定制函数</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>XML处理器(processor)提供了许多自定义挂钩。这些挂钩被定义为函数对象，可以由调用者提供。<br>可以使用以下定制功能。如果它们也可以访问自己的状态变量，则该状态的访问函数在括号中标识:</p>
+<h3 id="XMERL-XS-xmerl-xs"><a href="#XMERL-XS-xmerl-xs" class="headerlink" title="XMERL_XS (xmerl_xs)"></a>XMERL_XS (xmerl_xs)</h3><p>Erlang与XSLT有相似之处，因为两种语言都有函数式编程方法。</p>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>Erlang与XSLT有相似之处，因为两种语言都有函数式编程方法。使用xmerl_xpath可以在Erlang中编写类似于转换的XSLT。<br>在将XML文档转换为其他XML文档或(X)HTML以进行表示时，常常使用XSLT样式表。XSLT包含相当多的函数，学习它们可能需要一些努力。本文档假设您对XSLT有基本的了解。<br>由于XSLT基于带有模式匹配和递归的函数式编程方法，所以可以用Erlang编写类似的样式表。至少对于基本变换是这样的。本文档描述了如何使用XPath实现以及Erlangs模式匹配和一些函数来编写类似于转换的XSLT。<br>这种方法对于Erlanger来说可能更简单，但是如果您需要使用真正的XSLT样式表以“符合标准”，那么Sablotron XSLT包有一个可用的适配器，它是用c++编写的。参见教程。</p>
+<h3 id="定制函数"><a href="#定制函数" class="headerlink" title="定制函数"></a>定制函数</h3><h4 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h4><p>XML处理器(processor)提供了许多自定义挂钩。这些挂钩被定义为函数对象，可以由调用者提供。<br>可以使用以下定制功能。如果它们也可以访问自己的状态变量，则该状态的访问函数在括号中标识:</p>
 <ul>
 <li>event function ( xmerl_scan:event_state/[1,2] ) (事件函数)</li>
 <li>hook function ( xmerl_scan:hook_state/[1,2] ) (钩子函数)</li>
@@ -190,7 +192,7 @@ NOTE: When <Elem> is not wrapped with <Occurrence>, (Occurrence = once) is impli
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/05/erlang_xml/" data-id="ck68q2o7c0002b302bzwjfnxo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/05/erlang_xml/" data-id="ck6j80lpv000a2j027be22n2x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -198,6 +200,15 @@ NOTE: When <Elem> is not wrapped with <Occurrence>, (Occurrence = once) is impli
   
     
 <nav id="article-nav">
+  
+    <a href="/2020/02/05/git_primary/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Git初级篇
+        
+      </div>
+    </a>
   
   
     <a href="/2019/12/24/database_ddl/" id="article-nav-older" class="article-nav-link-wrap">
@@ -239,23 +250,23 @@ NOTE: When <Elem> is not wrapped with <Occurrence>, (Occurrence = once) is impli
       <ul>
         
           <li>
+            <a href="/2020/02/12/ssh/">SSH用法详解</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/06/erlang_rand/">伪随机与Erlang中的实现</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/05/git_primary/">Git初级篇</a>
+          </li>
+        
+          <li>
             <a href="/2020/02/05/erlang_xml/">Erlang中的XML</a>
           </li>
         
           <li>
             <a href="/2019/12/24/database_ddl/">数据定义</a>
-          </li>
-        
-          <li>
-            <a href="/2019/12/24/erlang_characteristics/">Erlang语言特点</a>
-          </li>
-        
-          <li>
-            <a href="/2019/12/23/erlang_myths/">Erlang性能指南</a>
-          </li>
-        
-          <li>
-            <a href="/2019/12/23/linux_cmd1/">Linux命令1</a>
           </li>
         
       </ul>

@@ -61,10 +61,131 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-ssh" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/12/ssh/" class="article-date">
+  <time datetime="2020-02-12T09:46:51.373Z" itemprop="datePublished">2020-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/12/ssh/">SSH用法详解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文主要讲述一个ssh相关的一些用法。</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/12/ssh/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/12/ssh/" data-id="ck6j80lpq00082j02g1kn8kkq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-erlang_rand" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/06/erlang_rand/" class="article-date">
+  <time datetime="2020-02-06T07:01:10.117Z" itemprop="datePublished">2020-02-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/06/erlang_rand/">伪随机与Erlang中的实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="伪随机与Erlang中的实现"><a href="#伪随机与Erlang中的实现" class="headerlink" title="伪随机与Erlang中的实现"></a>伪随机与Erlang中的实现</h2><h3 id="伪随机"><a href="#伪随机" class="headerlink" title="伪随机"></a>伪随机</h3><p>伪随机数是用确定性的算法计算出来自[0,1]均匀分布的随机数序列。并不真正的随机，但具有类似于随机数的统计特征，如均匀性、独立性等。在计算伪随机数时，若使用的初值（种子）不变，那么伪随机数的数序也不变。伪随机数可以用计算机大量生成，在模拟研究中为了提高模拟效率，一般采用伪随机数代替真正的随机数。模拟中使用的一般是循环周期极长并能通过随机数检验的伪随机数，以保证计算结果的随机性（百度百科）。</p>
+<h4 id="64位生成器"><a href="#64位生成器" class="headerlink" title="64位生成器"></a>64位生成器</h4><p>xoshiro256++/xoshiro256** (XOR/shift/rotate)是通用的，绝对可靠的生成器。它们拥有极好的速度，状态空间(256位)对于任何并行应用程序都足够大，并且它们通过了我们所知道的所有测试。<br>然而，如果只生成64位浮点数(通过提取上面的53位)，xoshiro256+是一个稍微快一点(≈15%)的生成器，具有类似的统计特性。<br>在一般情况下，必须考虑到它的最低位具有较低的线性复杂度，并且不能通过线性测试;然而，较低的线性复杂度在实践中几乎没有任何影响，而且如果您使用较高的位元生成浮点数，则肯定没有任何影响(我们计算了最低位元的线性复杂度的精确估计值)。</p>
+<p>如果空间有限，xoroshiro128++/xoroshiro128** (XOR/rotate/shift/rotate)与xoroshiro128+具有相同的速度，占用了一半的空间;同样的注释也适用。它们只适用于低规模的并行应用;此外，xoroshiro128+在汉明权重中表现出轻度依赖性，在我们的测试中，输出5 TB之后会产生故障。我们相信这种轻微的偏差不会影响任何应用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/06/erlang_rand/" data-id="ck6j80lpj00032j02hjtcd0gu" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-git_primary" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/05/git_primary/" class="article-date">
+  <time datetime="2020-02-05T07:51:43.936Z" itemprop="datePublished">2020-02-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/05/git_primary/">Git初级篇</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文主要描述git的一些基本操作</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/05/git_primary/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/05/git_primary/" data-id="ck6j80lq6000b2j025sns43iz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-erlang_xml" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/02/05/erlang_xml/" class="article-date">
-  <time datetime="2020-02-05T02:56:04.895Z" itemprop="datePublished">2020-02-05</time>
+  <time datetime="2020-02-05T07:20:40.601Z" itemprop="datePublished">2020-02-05</time>
 </a>
     
   </div>
@@ -92,7 +213,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/05/erlang_xml/" data-id="ck68q2o7c0002b302bzwjfnxo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/05/erlang_xml/" data-id="ck6j80lpv000a2j027be22n2x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -133,7 +254,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/24/database_ddl/" data-id="ck68q2o7a0001b302a0t1dewn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/24/database_ddl/" data-id="ck6j80lp500002j02ej5r6hie" class="article-share-link">Share</a>
       
       
     </footer>
@@ -174,7 +295,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/24/erlang_characteristics/" data-id="ck68q2o700000b302as2855ae" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/24/erlang_characteristics/" data-id="ck6j80lpg00012j0243cb2y9j" class="article-share-link">Share</a>
       
       
     </footer>
@@ -215,7 +336,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/23/erlang_myths/" data-id="ck68q2o7m0008b3023svohrgj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/23/erlang_myths/" data-id="ck6j80lps00092j026blwdy74" class="article-share-link">Share</a>
       
       
     </footer>
@@ -256,7 +377,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/23/linux_cmd1/" data-id="ck68q2o7k0007b302h96134bj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/23/linux_cmd1/" data-id="ck6j80lpp00072j026siee43k" class="article-share-link">Share</a>
       
       
     </footer>
@@ -297,7 +418,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/19/erlang_system_principles/" data-id="ck68q2o7j0006b3025nm8gsw8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/19/erlang_system_principles/" data-id="ck6j80lpo00062j02cnkcd134" class="article-share-link">Share</a>
       
       
     </footer>
@@ -338,89 +459,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ck68q2o7d0003b302eumt4263" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-erlang_http" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/11/24/erlang_http/" class="article-date">
-  <time datetime="2019-11-24T10:41:41.214Z" itemprop="datePublished">2019-11-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/11/24/erlang_http/">Erlang HTTP</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>该文档用于提供erlang Http常用的一些含义和处理http请求。</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/11/24/erlang_http/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/24/erlang_http/" data-id="ck68q2o7g0005b302f6odax5z" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-erlang_logger" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/11/11/erlang_logger/" class="article-date">
-  <time datetime="2019-11-11T06:25:19.398Z" itemprop="datePublished">2019-11-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/11/11/erlang_logger/">Erlang Logger</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在Erlang/OTP 21.0提供了一个通过Logger进行日志记录的API，Logger是内核程序的一部分。Logger由可用于发出日志事件的API和可自定义的后端组成，其中可以插入日志处理程序、过滤器和格式化程序。</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/11/11/erlang_logger/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/11/erlang_logger/" data-id="ck68q2o7f0004b302099dcxbf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ck6j80lph00022j0221fpcvqg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -431,6 +470,11 @@
 
   
 
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+  </nav>
 
 </section>
         
@@ -461,23 +505,23 @@
       <ul>
         
           <li>
+            <a href="/2020/02/12/ssh/">SSH用法详解</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/06/erlang_rand/">伪随机与Erlang中的实现</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/05/git_primary/">Git初级篇</a>
+          </li>
+        
+          <li>
             <a href="/2020/02/05/erlang_xml/">Erlang中的XML</a>
           </li>
         
           <li>
             <a href="/2019/12/24/database_ddl/">数据定义</a>
-          </li>
-        
-          <li>
-            <a href="/2019/12/24/erlang_characteristics/">Erlang语言特点</a>
-          </li>
-        
-          <li>
-            <a href="/2019/12/23/erlang_myths/">Erlang性能指南</a>
-          </li>
-        
-          <li>
-            <a href="/2019/12/23/linux_cmd1/">Linux命令1</a>
           </li>
         
       </ul>
