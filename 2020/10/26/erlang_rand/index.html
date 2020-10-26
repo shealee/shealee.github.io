@@ -5,13 +5,16 @@
   
 
   
-  <title>Archives | Hexo</title>
+  <title>伪随机与Erlang中的实现 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;archives&#x2F;page&#x2F;2&#x2F;index.html">
+  <meta name="description" content="伪随机数实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="伪随机与Erlang中的实现">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;10&#x2F;26&#x2F;erlang_rand&#x2F;index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="伪随机数实现">
 <meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2020-10-26T13:08:09.467Z">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -59,64 +62,57 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2019/11/24/erlang_http/" class="archive-article-date">
-  <time datetime="2019-11-24T10:41:41.214Z" itemprop="datePublished">Nov 24</time>
+        <section id="main"><article id="post-erlang_rand" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/10/26/erlang_rand/" class="article-date">
+  <time datetime="2020-10-26T13:08:09.467Z" itemprop="datePublished">2020-10-26</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/11/24/erlang_http/">Erlang HTTP</a>
+    <h1 class="article-title" itemprop="name">
+      伪随机与Erlang中的实现
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2019/11/11/erlang_logger/" class="archive-article-date">
-  <time datetime="2019-11-11T06:25:19.398Z" itemprop="datePublished">Nov 11</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/11/11/erlang_logger/">Erlang Logger</a>
-    </h1>
-  
+        <p>伪随机数实现</p>
+<a id="more"></a>
 
-    </header>
+<h2 id="伪随机与Erlang中的实现"><a href="#伪随机与Erlang中的实现" class="headerlink" title="伪随机与Erlang中的实现"></a>伪随机与Erlang中的实现</h2><h3 id="伪随机"><a href="#伪随机" class="headerlink" title="伪随机"></a>伪随机</h3><p>伪随机数是用确定性的算法计算出来自[0,1]均匀分布的随机数序列。并不真正的随机，但具有类似于随机数的统计特征，如均匀性、独立性等。在计算伪随机数时，若使用的初值（种子）不变，那么伪随机数的数序也不变。伪随机数可以用计算机大量生成，在模拟研究中为了提高模拟效率，一般采用伪随机数代替真正的随机数。模拟中使用的一般是循环周期极长并能通过随机数检验的伪随机数，以保证计算结果的随机性（百度百科）。</p>
+<h4 id="64位生成器"><a href="#64位生成器" class="headerlink" title="64位生成器"></a>64位生成器</h4><p>xoshiro256++/xoshiro256** (XOR/shift/rotate)是通用的，绝对可靠的生成器。它们拥有极好的速度，状态空间(256位)对于任何并行应用程序都足够大，并且它们通过了我们所知道的所有测试。<br>然而，如果只生成64位浮点数(通过提取上面的53位)，xoshiro256+是一个稍微快一点(≈15%)的生成器，具有类似的统计特性。<br>在一般情况下，必须考虑到它的最低位具有较低的线性复杂度，并且不能通过线性测试;然而，较低的线性复杂度在实践中几乎没有任何影响，而且如果您使用较高的位元生成浮点数，则肯定没有任何影响(我们计算了最低位元的线性复杂度的精确估计值)。</p>
+<p>如果空间有限，xoroshiro128++/xoroshiro128** (XOR/rotate/shift/rotate)与xoroshiro128+具有相同的速度，占用了一半的空间;同样的注释也适用。它们只适用于低规模的并行应用;此外，xoroshiro128+在汉明权重中表现出轻度依赖性，在我们的测试中，输出5 TB之后会产生故障。我们相信这种轻微的偏差不会影响任何应用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/10/26/erlang_rand/" data-id="ckgqk488x0005gm029kuvbdd0" class="article-share-link">Share</a>
+      
+      
+    </footer>
   </div>
-</article>
   
-  
-    </div></section>
-  
-
-
-  <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/archives/">&amp;laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span>
-  </nav>
+<nav id="article-nav">
+  
+  
+    <a href="/2020/02/13/ssh/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SSH用法详解</div>
+    </a>
+  
+</nav>
+
+  
+</article>
 
 </section>
         

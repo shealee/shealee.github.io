@@ -61,6 +61,47 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-erlang_rand" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/10/26/erlang_rand/" class="article-date">
+  <time datetime="2020-10-26T13:08:09.467Z" itemprop="datePublished">2020-10-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/26/erlang_rand/">伪随机与Erlang中的实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>伪随机数实现</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/10/26/erlang_rand/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/10/26/erlang_rand/" data-id="ckgqk488x0005gm029kuvbdd0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ssh" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/02/13/ssh/" class="article-date">
@@ -92,46 +133,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/13/ssh/" data-id="ck6ucltfk0009oc0270qq59gn" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-erlang_rand" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/02/06/erlang_rand/" class="article-date">
-  <time datetime="2020-02-06T07:01:10.117Z" itemprop="datePublished">2020-02-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/02/06/erlang_rand/">伪随机与Erlang中的实现</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="伪随机与Erlang中的实现"><a href="#伪随机与Erlang中的实现" class="headerlink" title="伪随机与Erlang中的实现"></a>伪随机与Erlang中的实现</h2><h3 id="伪随机"><a href="#伪随机" class="headerlink" title="伪随机"></a>伪随机</h3><p>伪随机数是用确定性的算法计算出来自[0,1]均匀分布的随机数序列。并不真正的随机，但具有类似于随机数的统计特征，如均匀性、独立性等。在计算伪随机数时，若使用的初值（种子）不变，那么伪随机数的数序也不变。伪随机数可以用计算机大量生成，在模拟研究中为了提高模拟效率，一般采用伪随机数代替真正的随机数。模拟中使用的一般是循环周期极长并能通过随机数检验的伪随机数，以保证计算结果的随机性（百度百科）。</p>
-<h4 id="64位生成器"><a href="#64位生成器" class="headerlink" title="64位生成器"></a>64位生成器</h4><p>xoshiro256++/xoshiro256** (XOR/shift/rotate)是通用的，绝对可靠的生成器。它们拥有极好的速度，状态空间(256位)对于任何并行应用程序都足够大，并且它们通过了我们所知道的所有测试。<br>然而，如果只生成64位浮点数(通过提取上面的53位)，xoshiro256+是一个稍微快一点(≈15%)的生成器，具有类似的统计特性。<br>在一般情况下，必须考虑到它的最低位具有较低的线性复杂度，并且不能通过线性测试;然而，较低的线性复杂度在实践中几乎没有任何影响，而且如果您使用较高的位元生成浮点数，则肯定没有任何影响(我们计算了最低位元的线性复杂度的精确估计值)。</p>
-<p>如果空间有限，xoroshiro128++/xoroshiro128** (XOR/rotate/shift/rotate)与xoroshiro128+具有相同的速度，占用了一半的空间;同样的注释也适用。它们只适用于低规模的并行应用;此外，xoroshiro128+在汉明权重中表现出轻度依赖性，在我们的测试中，输出5 TB之后会产生故障。我们相信这种轻微的偏差不会影响任何应用。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/06/erlang_rand/" data-id="ck6ucltfm000aoc027b8pb11l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/13/ssh/" data-id="ckgqk4894000bgm02fikn5e52" class="article-share-link">Share</a>
       
       
     </footer>
@@ -172,7 +174,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/05/git_primary/" data-id="ck6ucltfi0008oc027n3v5wil" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/05/git_primary/" data-id="ckgqk48920009gm02dqs82o4a" class="article-share-link">Share</a>
       
       
     </footer>
@@ -213,7 +215,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/05/erlang_xml/" data-id="ck6ucltfg0006oc02f0wz9zw2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/05/erlang_xml/" data-id="ckgqk48900008gm02b4qah7o0" class="article-share-link">Share</a>
       
       
     </footer>
@@ -254,7 +256,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/24/database_ddl/" data-id="ck6ucltfc0004oc02d2vlc53f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/24/database_ddl/" data-id="ckgqk488l0000gm02ckfkb01x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -295,7 +297,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/24/erlang_characteristics/" data-id="ck6ucltet0000oc02bny62fc8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/24/erlang_characteristics/" data-id="ckgqk488r0001gm023ns4fuf7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -336,7 +338,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/23/erlang_myths/" data-id="ck6ucltfh0007oc0257gm3tul" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/23/erlang_myths/" data-id="ckgqk488y0006gm02138s30x8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -377,7 +379,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/23/linux_cmd1/" data-id="ck6ucltfn000boc02943l0n9s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/23/linux_cmd1/" data-id="ckgqk4893000agm02266v634n" class="article-share-link">Share</a>
       
       
     </footer>
@@ -418,7 +420,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/19/erlang_system_principles/" data-id="ck6ucltfe0005oc02fgc995m1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/19/erlang_system_principles/" data-id="ckgqk488z0007gm026wsz3lza" class="article-share-link">Share</a>
       
       
     </footer>
@@ -459,7 +461,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ck6ucltf60001oc02681y2b5c" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/26/erlang_compile/" data-id="ckgqk488t0002gm029xuk2lxs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -492,7 +494,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li></ul>
     </div>
   </div>
 
@@ -505,11 +507,11 @@
       <ul>
         
           <li>
-            <a href="/2020/02/13/ssh/">SSH用法详解</a>
+            <a href="/2020/10/26/erlang_rand/">伪随机与Erlang中的实现</a>
           </li>
         
           <li>
-            <a href="/2020/02/06/erlang_rand/">伪随机与Erlang中的实现</a>
+            <a href="/2020/02/13/ssh/">SSH用法详解</a>
           </li>
         
           <li>
